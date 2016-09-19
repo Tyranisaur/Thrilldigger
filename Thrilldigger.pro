@@ -12,9 +12,11 @@ TARGET = Thrilldigger
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp
+SOURCES += main.cpp \
+    settingswindow.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += \
+    settingswindow.h
 
-FORMS    += mainwindow.ui
+FORMS    += \
+    settingswindow.ui
