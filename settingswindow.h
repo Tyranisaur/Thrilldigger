@@ -6,6 +6,7 @@
 namespace Ui {
 class SettingsWindow;
 }
+class SimulatorWindow;
 
 class SettingsWindow : public QMainWindow
 {
@@ -21,8 +22,17 @@ private slots:
 
     void on_SolverButton_clicked();
 
+    void on_beginnerRadioButton_clicked();
+
+    void on_intermediateRadioButton_clicked();
+
+    void on_expertRadioButton_clicked();
+
+    void on_customRadioButton_clicked();
+
 private:
     Ui::SettingsWindow *ui;
+    SimulatorWindow * simulator;
 
 
 };

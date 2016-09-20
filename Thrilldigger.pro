@@ -13,10 +13,15 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp \
-    settingswindow.cpp
+    settingswindow.cpp \
+    simulatorwindow.cpp \
+    board.cpp
 
 HEADERS  += \
-    settingswindow.h
+    settingswindow.h \
+    simulatorwindow.h \
+    board.h
 
 FORMS    += \
-    settingswindow.ui
+    settingswindow.ui \
+    simulatorwindow.ui

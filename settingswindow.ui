@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>SettingsWindow</class>
  <widget class="QMainWindow" name="SettingsWindow">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,7 +20,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Settings</string>
+   <string>Setup</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">
@@ -25,6 +28,12 @@
      <horstretch>0</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>16777215</height>
+    </size>
    </property>
    <property name="contextMenuPolicy">
     <enum>Qt::NoContextMenu</enum>
@@ -34,55 +43,127 @@
      <rect>
       <x>40</x>
       <y>10</y>
-      <width>281</width>
+      <width>271</width>
       <height>221</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="leftMargin">
+      <number>5</number>
+     </property>
+     <property name="topMargin">
+      <number>5</number>
+     </property>
+     <property name="rightMargin">
+      <number>5</number>
+     </property>
+     <property name="bottomMargin">
+      <number>5</number>
+     </property>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
-        <widget class="QLineEdit" name="heightTextBox">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Height&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <widget class="QLabel" name="heightLabel">
+         <property name="text">
+          <string>Height:</string>
          </property>
-         <property name="placeholderText">
-          <string>Height</string>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="widthTextBox">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Width&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <widget class="QSpinBox" name="heightSpinner"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="widthLabel">
+         <property name="text">
+          <string>Width:</string>
          </property>
-         <property name="placeholderText">
-          <string>Width</string>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="widthSpinner"/>
        </item>
       </layout>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
-        <widget class="QLineEdit" name="bombsTextBox">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bombs&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <widget class="QLabel" name="bombsLabel">
+         <property name="text">
+          <string>Bombs:</string>
          </property>
-         <property name="placeholderText">
-          <string>Bombs</string>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="rupoorsTextBox">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Rupoors&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <widget class="QSpinBox" name="bombsSpinner"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="rupoorsLabel">
+         <property name="text">
+          <string>Rupoors:</string>
          </property>
-         <property name="placeholderText">
-          <string>Rupoors</string>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="rupoorsSpinner"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QRadioButton" name="beginnerRadioButton">
+         <property name="text">
+          <string>Beginner</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroup</string>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="intermediateRadioButton">
+         <property name="text">
+          <string>Intermediate</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroup</string>
+         </attribute>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QRadioButton" name="expertRadioButton">
+         <property name="text">
+          <string>Expert</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroup</string>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="customRadioButton">
+         <property name="text">
+          <string>Custom</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroup</string>
+         </attribute>
         </widget>
        </item>
       </layout>
@@ -112,4 +193,7 @@
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>
