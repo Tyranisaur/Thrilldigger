@@ -10,11 +10,13 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->customRadioButton->setChecked(true);
+    simulator = nullptr;
 }
 
 SettingsWindow::~SettingsWindow()
 {
     delete ui;
+    simulator->close();
     delete simulator;
 }
 
@@ -30,6 +32,7 @@ void SettingsWindow::on_SimulatorButton_clicked()
     };
     if(simulator != nullptr)
     {
+        simulator->close();
         delete simulator;
     }
     simulator = new SimulatorWindow(&params);
