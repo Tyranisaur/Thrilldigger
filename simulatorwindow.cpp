@@ -57,4 +57,7 @@ void SimulatorWindow::cellOpened()
     }
 afterLoop:
     std::cout << "clicked on x = " << x << ", y = " << y << std::endl;
+
+    source->setStyleSheet("background: blue");
+    source->setEnabled(false);
 }

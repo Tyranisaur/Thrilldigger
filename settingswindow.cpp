@@ -16,8 +16,6 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
 SettingsWindow::~SettingsWindow()
 {
     delete ui;
-    simulator->close();
-    delete simulator;
 }
 
 
@@ -87,3 +85,11 @@ void SettingsWindow::on_customRadioButton_clicked()
     ui->bombsSpinner->setEnabled(true);
     ui->rupoorsSpinner->setEnabled(true);
 }
+
+void SettingsWindow::closeEvent(QCloseEvent *event)
+{
+    simulator->close();
+    delete simulator;
+}
+
+

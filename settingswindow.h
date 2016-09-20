@@ -33,6 +33,7 @@ private slots:
 private:
     Ui::SettingsWindow *ui;
     SimulatorWindow * simulator;
+    void closeEvent(QCloseEvent * event);
 
 
 };
