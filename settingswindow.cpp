@@ -30,8 +30,9 @@ void SettingsWindow::on_SimulatorButton_clicked()
     };
     if(simulator != nullptr)
     {
-        simulator = new SimulatorWindow(&params);
+        delete simulator;
     }
+    simulator = new SimulatorWindow(&params);
     simulator->show();
 }
 

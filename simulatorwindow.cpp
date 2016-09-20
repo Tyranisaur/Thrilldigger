@@ -35,7 +35,7 @@ SimulatorWindow::SimulatorWindow(ProblemParameters * params, QWidget *parent ) :
 SimulatorWindow::~SimulatorWindow()
 {
     delete ui;
-    delete cellGrid;
+    delete[] cellGrid;
 }
 
 #include "iostream"
