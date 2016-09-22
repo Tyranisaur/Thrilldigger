@@ -8,10 +8,12 @@ SimulatorWindow::SimulatorWindow(ProblemParameters * params, QWidget *parent ) :
     ui(new Ui::SimulatorWindow)
 {
     ui->setupUi(this);
+    setAttribute(Qt::WA_DeleteOnClose);
     QPushButton * button;
     cellGrid = new QPushButton**[params->height] ;
     boardHeight = params->height;
     boardWidth = params->width;
+    board = new Board(params);
     for(int y = 0; y < params->height; y++)
     {
         cellGrid[y] = new QPushButton*[params->width];
@@ -30,11 +32,13 @@ SimulatorWindow::SimulatorWindow(ProblemParameters * params, QWidget *parent ) :
             ui->gridLayout->addWidget(button, y, x, Qt::AlignHCenter);
         }
     }
+
 }
 
 SimulatorWindow::~SimulatorWindow()
 {
     delete ui;
+    delete board;
     delete[] cellGrid;
 }
 
@@ -57,7 +61,30 @@ void SimulatorWindow::cellOpened()
     }
 afterLoop:
     std::cout << "clicked on x = " << x << ", y = " << y << std::endl;
-
-    source->setStyleSheet("background: blue");
+    CellType value = board->getCell(x, y);
+    switch(value)
+    {
+    case CellType::bomb:
+        source->setStyleSheet("background: black");
+        break;
+    case CellType::rupoor:
+        source->setStyleSheet("background: gray");
+        break;
+    case CellType::green:
+        source->setStyleSheet("background: green");
+        break;
+    case CellType::blue:
+        source->setStyleSheet("background: blue");
+        break;
+    case CellType::red:
+        source->setStyleSheet("background: red");
+        break;
+    case CellType::silver:
+        source->setStyleSheet("background: silver");
+        break;
+    case CellType::gold:
+        source->setStyleSheet("background: gold");
+        break;
+    }
     source->setEnabled(false);
 }

@@ -9,6 +9,7 @@ class SimulatorWindow;
 class QPushButton;
 
 struct ProblemParameters;
+class Board;
 
 class SimulatorWindow : public QMainWindow
 {
@@ -27,6 +28,7 @@ private:
     QPushButton *** cellGrid;
     int boardWidth;
     int boardHeight;
+    Board * board;
 
 };
 

@@ -8,6 +8,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::SettingsWindow)
 {
+    setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
     ui->customRadioButton->setChecked(true);
     simulator = nullptr;
@@ -16,6 +17,11 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
 SettingsWindow::~SettingsWindow()
 {
     delete ui;
+    if(simulator != nullptr)
+    {
+        simulator->close();
+    }
+}
 }
 
 
@@ -34,6 +40,12 @@ void SettingsWindow::on_SimulatorButton_clicked()
         delete simulator;
     }
     simulator = new SimulatorWindow(&params);
+
+    connect(simulator,
+            SIGNAL(destroyed(QObject*)),
+            this,
+            SLOT(simWindowDestroyed()));
+
     simulator->show();
 }
 
@@ -86,10 +98,9 @@ void SettingsWindow::on_customRadioButton_clicked()
     ui->rupoorsSpinner->setEnabled(true);
 }
 
-void SettingsWindow::closeEvent(QCloseEvent *event)
-{
-    simulator->close();
-    delete simulator;
-}
 
+void SettingsWindow::simWindowDestroyed()
+{
+    simulator = nullptr;
+}
 

@@ -30,10 +30,11 @@ private slots:
 
     void on_customRadioButton_clicked();
 
+    void simWindowDestroyed();
+
 private:
     Ui::SettingsWindow *ui;
     SimulatorWindow * simulator;
-    void closeEvent(QCloseEvent * event);
 
 
 };
