@@ -8,7 +8,6 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::SettingsWindow)
 {
-    setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
     ui->customRadioButton->setChecked(true);
     simulator = nullptr;
@@ -22,7 +21,7 @@ SettingsWindow::~SettingsWindow()
         simulator->close();
     }
 }
-}
+
 
 
 
@@ -34,19 +33,20 @@ void SettingsWindow::on_SimulatorButton_clicked()
         ui->bombsSpinner->value(),
         ui->rupoorsSpinner->value()
     };
-    if(simulator != nullptr)
-    {
-        simulator->close();
-        delete simulator;
+    if(params.height + params.width > 0 ){
+        if(simulator != nullptr)
+        {
+            simulator->close();
+        }
+        simulator = new SimulatorWindow(&params);
+
+        connect(simulator,
+                SIGNAL(destroyed(QObject*)),
+                this,
+                SLOT(simWindowDestroyed()));
+
+        simulator->show();
     }
-    simulator = new SimulatorWindow(&params);
-
-    connect(simulator,
-            SIGNAL(destroyed(QObject*)),
-            this,
-            SLOT(simWindowDestroyed()));
-
-    simulator->show();
 }
 
 void SettingsWindow::on_SolverButton_clicked()

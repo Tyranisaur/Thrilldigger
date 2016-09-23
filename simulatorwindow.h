@@ -21,7 +21,7 @@ public:
 
 public slots:
 
-    void cellOpened();
+    void cellOpened(int x, int y);
 private:
 
     Ui::SimulatorWindow *ui;

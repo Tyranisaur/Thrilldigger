@@ -25,9 +25,11 @@ SimulatorWindow::SimulatorWindow(ProblemParameters * params, QWidget *parent ) :
             button = new QPushButton(ui->gridLayoutWidget);
             cellGrid[y][x] = button;
             connect(button,
-                    SIGNAL(clicked(bool)),
-                    this,
-                    SLOT(cellOpened( )));
+                    &QPushButton::clicked,
+                    [=]()
+                    {
+                        this->cellOpened(x, y);
+                    });
 
             ui->gridLayout->addWidget(button, y, x, Qt::AlignHCenter);
         }
@@ -42,49 +44,34 @@ SimulatorWindow::~SimulatorWindow()
     delete[] cellGrid;
 }
 
-#include "iostream"
-void SimulatorWindow::cellOpened()
+
+void SimulatorWindow::cellOpened(int x, int y)
 {
-    QPushButton * source =  (QPushButton*)sender();
-    int x, y;
-    for(int i = 0; i < boardHeight; i++)
-    {
-        for(int j = 0; j < boardWidth; j++)
-        {
-            if (source == cellGrid[i][j])
-            {
-                y = i;
-                x = j;
-                goto afterLoop;
-            }
-        }
-    }
-afterLoop:
-    std::cout << "clicked on x = " << x << ", y = " << y << std::endl;
+    QPushButton * button = cellGrid[y][x];
     CellType value = board->getCell(x, y);
     switch(value)
     {
     case CellType::bomb:
-        source->setStyleSheet("background: black");
+        button->setStyleSheet("background: black");
         break;
     case CellType::rupoor:
-        source->setStyleSheet("background: gray");
+        button->setStyleSheet("background: gray");
         break;
     case CellType::green:
-        source->setStyleSheet("background: green");
+        button->setStyleSheet("background: green");
         break;
     case CellType::blue:
-        source->setStyleSheet("background: blue");
+        button->setStyleSheet("background: blue");
         break;
     case CellType::red:
-        source->setStyleSheet("background: red");
+        button->setStyleSheet("background: red");
         break;
     case CellType::silver:
-        source->setStyleSheet("background: silver");
+        button->setStyleSheet("background: silver");
         break;
     case CellType::gold:
-        source->setStyleSheet("background: gold");
+        button->setStyleSheet("background: gold");
         break;
     }
-    source->setEnabled(false);
+    button->setEnabled(false);
 }
