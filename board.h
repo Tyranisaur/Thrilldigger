@@ -1,23 +1,10 @@
 #ifndef BOARD_H
 #define BOARD_H
+#include "celltype.h"
 
 
-struct ProblemParameters{
-    const int width;
-    const int height;
-    const int bombs;
-    const int rupoors;
-};
 
-enum CellType{
-    bomb = -2,
-    rupoor = -1,
-    green = 0,
-    blue = 2,
-    red = 4,
-    silver = 6,
-    gold = 8,
-};
+struct ProblemParameters;
 
 
 class Board
@@ -27,10 +14,14 @@ public:
     Board(ProblemParameters * params);
     ~Board();
 
-    CellType getCell(int x, int y);
+    CellType::CellType getCell(int x, int y);
+    bool hasWon();
 
 private:
-    CellType ** boardRep;
+    int height;
+    int width;
+    bool ** opened;
+    CellType::CellType ** boardRep;
 };
 
 

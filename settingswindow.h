@@ -7,6 +7,7 @@ namespace Ui {
 class SettingsWindow;
 }
 class SimulatorWindow;
+class SolverWindow;
 
 class SettingsWindow : public QMainWindow
 {
@@ -32,9 +33,12 @@ private slots:
 
     void simWindowDestroyed();
 
+    void solverWindowDestroyed();
+
 private:
     Ui::SettingsWindow *ui;
     SimulatorWindow * simulator;
+    SolverWindow * solver;
 
 
 };

@@ -28,6 +28,7 @@ private:
     QPushButton *** cellGrid;
     int boardWidth;
     int boardHeight;
+    int rupeeTotal;
     Board * board;
 
 };

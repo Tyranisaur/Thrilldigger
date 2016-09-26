@@ -1,16 +1,22 @@
 #include "board.h"
+#include "problemparameters.h"
 #include <random>
 
 Board::Board(ProblemParameters * params)
 {
     int holes = params->height * params->width;
-    boardRep = new CellType*[params->height];
+    height = params->height;
+    width = params->width;
+    boardRep = new CellType::CellType*[params->height];
+    opened = new bool*[height];
     for(int i = 0; i < params->height; i++)
     {
-        boardRep[i] = new CellType[params->width];
+        opened[i] = new bool[width];
+        boardRep[i] = new CellType::CellType[params->width];
         for(int j = 0; j < params->width; j++)
         {
-            boardRep[i][j] = CellType::green;
+            opened[i][j] = false;
+            boardRep[i][j] = CellType::CellType::green;
         }
     }
     int index;
@@ -24,12 +30,12 @@ Board::Board(ProblemParameters * params)
         x = index % params->width;
         y = index / params->width;
 
-        if(boardRep[y][x] == CellType::bomb)
+        if(boardRep[y][x] == CellType::CellType::bomb)
         {
             b--;
             continue;
         }
-        boardRep[y][x] = CellType::bomb;
+        boardRep[y][x] = CellType::CellType::bomb;
 
     }
     for(int r = 0; r < params->rupoors; r++)
@@ -38,12 +44,12 @@ Board::Board(ProblemParameters * params)
         x = index % params->width;
         y = index / params->width;
 
-        if(boardRep[y][x] != CellType::green)
+        if(boardRep[y][x] != CellType::CellType::green)
         {
             r--;
             continue;
         }
-        boardRep[y][x] = CellType::rupoor;
+        boardRep[y][x] = CellType::CellType::rupoor;
 
     }
 
@@ -53,7 +59,7 @@ Board::Board(ProblemParameters * params)
     {
         for(int x = 0; x < params->width; x++)
         {
-            if(boardRep[y][x] == CellType::green)
+            if(boardRep[y][x] == CellType::CellType::green)
             {
                 badspots = 0;
                 for(int filterY = y - 1; filterY < y + 2; filterY++)
@@ -78,23 +84,23 @@ Board::Board(ProblemParameters * params)
                 switch(badspots)
                 {
                 case 0:
-                    boardRep[y][x] = CellType::green;
+                    boardRep[y][x] = CellType::CellType::green;
                     break;
                 case 1:
                 case 2:
-                    boardRep[y][x] = CellType::blue;
+                    boardRep[y][x] = CellType::CellType::blue;
                     break;
                 case 3:
                 case 4:
-                    boardRep[y][x] = CellType::red;
+                    boardRep[y][x] = CellType::CellType::red;
                     break;
                 case 5:
                 case 6:
-                    boardRep[y][x] = CellType::silver;
+                    boardRep[y][x] = CellType::CellType::silver;
                     break;
                 case 7:
                 case 8:
-                    boardRep[y][x] = CellType::gold;
+                    boardRep[y][x] = CellType::CellType::gold;
                     break;
                 }
             }
@@ -107,7 +113,23 @@ Board::~Board()
     delete[] boardRep;
 }
 
-CellType Board::getCell(int x, int y)
+CellType::CellType Board::getCell(int x, int y)
 {
+    opened[y][x] = true;
     return boardRep[y][x];
+}
+
+bool Board::hasWon()
+{
+    for(int y = 0; y < height; y++)
+    {
+        for(int x = 0; x < width; x++)
+        {
+            if(!opened[y][x] && boardRep[y][x] > 0)
+            {
+                return false;
+            }
+        }
+    }
+    return true;
 }

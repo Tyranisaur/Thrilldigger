@@ -1,7 +1,8 @@
 #include "settingswindow.h"
 #include "ui_settingswindow.h"
 #include "simulatorwindow.h"
-#include "board.h"
+#include "solverwindow.h"
+#include "problemparameters.h"
 
 
 SettingsWindow::SettingsWindow(QWidget *parent) :
@@ -11,6 +12,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->customRadioButton->setChecked(true);
     simulator = nullptr;
+    solver = nullptr;
 }
 
 SettingsWindow::~SettingsWindow()
@@ -19,6 +21,10 @@ SettingsWindow::~SettingsWindow()
     if(simulator != nullptr)
     {
         simulator->close();
+    }
+    if(solver != nullptr)
+    {
+        solver->close();
     }
 }
 
@@ -51,7 +57,26 @@ void SettingsWindow::on_SimulatorButton_clicked()
 
 void SettingsWindow::on_SolverButton_clicked()
 {
+    ProblemParameters params = {
+        ui->widthSpinner->value(),
+        ui->heightSpinner->value(),
+        ui->bombsSpinner->value(),
+        ui->rupoorsSpinner->value()
+    };
+    if(params.height + params.width > 0 ){
+        if(solver != nullptr)
+        {
+            solver->close();
+        }
+        solver = new SolverWindow(&params);
 
+        connect(solver,
+                SIGNAL(destroyed(QObject*)),
+                this,
+                SLOT(solverWindowDestroyed()));
+
+        solver->show();
+    }
 }
 
 void SettingsWindow::on_beginnerRadioButton_clicked()
@@ -104,3 +129,7 @@ void SettingsWindow::simWindowDestroyed()
     simulator = nullptr;
 }
 
+void SettingsWindow::solverWindowDestroyed()
+{
+    solver = nullptr;
+}
