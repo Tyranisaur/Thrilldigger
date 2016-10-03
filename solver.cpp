@@ -72,6 +72,7 @@ void Solver::setCell(int x, int y, DugType::DugType type){
         Constraint * constraint;
         if (constraints[y][x] != nullptr)
         {
+            constraintList.removeOne(constraints[y][x]);
             delete constraints[y][x];
         }
 
@@ -118,7 +119,6 @@ void Solver::setCell(int x, int y, DugType::DugType type){
     {
         knownBadSpots++;
         badSpots[y][x] = true;
-        unconstrainedUnopenedHoles->remove(&holes[y][x]);
         constrainedUnopenedHoles->remove(&holes[y][x]);
         constraintList.removeOne(constraints[y][x]);
     }
@@ -147,7 +147,7 @@ double ** Solver::calculate()
         std::fill(badSpotWeights[y], badSpotWeights[y] + boardWidth, 0);
         std::fill(probabilities[y], probabilities[y] + boardWidth, 0.0);
     }
-    while(it.hasNext())
+    do
     {
         bombsAmongConstrainedHoles = it.iterate() + knownBadSpots;
         if(!validateBoard())
@@ -176,6 +176,8 @@ double ** Solver::calculate()
         }
 
     }
+    while(it.hasNext());
+
     for(int y = 0; y < boardHeight; y++)
     {
         for(int x = 0; x < boardWidth; x++)

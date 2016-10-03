@@ -14,7 +14,7 @@ public:
 private:
     bool ** badSpotArray;
     int numConstrainedHoles;
-
+    bool started;
     int* maxIndexArray;
     int* indexArray;
     int arrayLength;
