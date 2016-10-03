@@ -6,7 +6,6 @@
 #include "hole.h"
 #include "constraint.h"
 #include "configurationiterator.h"
-#include "math.h"
 #include <algorithm>
 
 Solver::Solver(ProblemParameters * params)
@@ -47,7 +46,7 @@ Solver::Solver(ProblemParameters * params)
             probabilities[y][x] = 0.0;
         }
     }
-    knownBadSPots = 0;
+    knownBadSpots = 0;
 }
 
 Solver::~Solver()
@@ -65,7 +64,7 @@ void Solver::setCell(int x, int y, DugType::DugType type){
     unconstrainedUnopenedHoles->remove(&holes[y][x]);
     if(board[y][x] >= -2 && board[y][x] < 0)
     {
-        knownBadSPots--;
+        knownBadSpots--;
     }
     board[y][x] = type;
     if(type >= 0)
@@ -117,7 +116,7 @@ void Solver::setCell(int x, int y, DugType::DugType type){
     }
     else if(type >= -2)
     {
-        knownBadSPots++;
+        knownBadSpots++;
         badSpots[y][x] = true;
         unconstrainedUnopenedHoles->remove(&holes[y][x]);
         constrainedUnopenedHoles->remove(&holes[y][x]);
@@ -136,12 +135,16 @@ double ** Solver::calculate()
         array[i] = &badSpots[hole->y][hole->x];
         i++;
     }
-    ConfigurationIterator it(array, i, 0, i);
+    ConfigurationIterator it(
+                array,
+                i,
+                std::max(bombs + rupoors - knownBadSpots - unconstrainedUnopenedHoles->size(), 0),
+                std::min(i, bombs + rupoors));
     long long configurationWeight;
     long long totalWeight = 0;
     for(int y = 0; y < boardHeight; y++)
     {
-        std::fill(badSpotWeights[y], badSpotWeights[y]+boardWidth, 0);
+        std::fill(badSpotWeights[y], badSpotWeights[y] + boardWidth, 0);
         std::fill(probabilities[y], probabilities[y] + boardWidth, 0.0);
     }
     while(it.hasNext())

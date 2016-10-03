@@ -28,6 +28,7 @@ private:
     QSet<Hole*> * unconstrainedUnopenedHoles;
 
     int bombsAmongConstrainedHoles;
+    int knownBadSpots;
     int boardHeight;
     int boardWidth;
     int bombs;
