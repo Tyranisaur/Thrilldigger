@@ -17,7 +17,8 @@ SOURCES += main.cpp \
     simulatorwindow.cpp \
     board.cpp \
     solverwindow.cpp \
-    solver.cpp
+    solver.cpp \
+    configurationiterator.cpp
 
 HEADERS  += \
     settingswindow.h \
@@ -27,7 +28,10 @@ HEADERS  += \
     solver.h \
     dugtype.h \
     celltype.h \
-    problemparameters.h
+    problemparameters.h \
+    hole.h \
+    configurationiterator.h \
+    constraint.h
 
 FORMS    += \
     settingswindow.ui \

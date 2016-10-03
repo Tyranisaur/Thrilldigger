@@ -1,8 +1,12 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 #include "dugtype.h"
-struct ProblemParameters;
+#include <QList>
+#include <QSet>
 
+struct ProblemParameters;
+struct Hole;
+struct Constraint;
 
 class Solver
 {
@@ -15,11 +19,23 @@ public:
 
 
 private:
+    double ** probabilities;
+    QList<Constraint*> constraintList;
+    Constraint *** constraints;
+    bool ** badSpots;
+    Hole ** holes;
+    QSet<Hole*> * constrainedUnopenedHoles;
+    QSet<Hole*> * unconstrainedUnopenedHoles;
+
+    int bombsAmongConstrainedHoles;
     int boardHeight;
     int boardWidth;
     int bombs;
     int rupoors;
+    long long ** badSpotWeights;
     DugType::DugType ** board;
+    bool validateBoard();
+    unsigned long long choose(unsigned long long n, unsigned long long k);
 };
 
 #endif // SOLVER_H
