@@ -8,21 +8,38 @@
 #include <QCOmboBox>
 #include <QMenu>
 #include <QLabel>
+#include <QMovie>
+#include <QThread>
 
 SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::SolverWindow)
 {
+    thread = new QThread();
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
     QVBoxLayout * vLayout;
     QPushButton * button;
     QComboBox * menuButton;
-    solver = new Solver(params);
+    solver = new Solver(params, thread);
+    probabilityArray = solver->getProbabilityArray();
+    solver->moveToThread(thread);
+    connect(thread,
+            SIGNAL(started()),
+            solver,
+            SLOT(calculate()));
+    connect(thread,
+            SIGNAL(finished()),
+            this,
+            SLOT(processCalculation()));
     boardHeight = params->height;
     boardWidth = params->width;
     cellGrid = new QVBoxLayout **[boardHeight];
     boardState = new DugType::DugType *[boardHeight];
+    QMovie * movie = new QMovie("C:\\Users\\Torgeir\\Documents\\GitHub\\Thrilldigger\\ajax-loader.gif");
+    ui->animationLabel->setMovie(movie);
+    movie->start();
+    ui->animationLabel->hide();
 
     for(int y = 0; y < boardHeight; y++)
     {
@@ -67,6 +84,7 @@ SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
 
 SolverWindow::~SolverWindow()
 {
+    delete thread;
     delete ui;
     delete[] cellGrid;
     delete[] boardState;
@@ -75,7 +93,14 @@ SolverWindow::~SolverWindow()
 
 void SolverWindow::on_calculateButton_clicked()
 {
-    double ** result = solver->calculate();
+    ui->animationLabel->show();
+
+    thread->start();
+
+}
+
+void SolverWindow::processCalculation()
+{
     QPushButton * button;
     for(int y = 0; y < boardHeight; y++)
     {
@@ -84,10 +109,12 @@ void SolverWindow::on_calculateButton_clicked()
             if(boardState[y][x] == DugType::DugType::undug)
             {
                 button = (QPushButton *)cellGrid[y][x]->itemAt(0)->widget();
-                button->setText(QString("%2").arg(result[y][x] * 100) + "% Bad");
+                button->setText(QString::number( probabilityArray[y][x] * 100, 'f', 2) + "% Bad");
             }
         }
     }
+
+    ui->animationLabel->hide();
 }
 
 void SolverWindow::cellSet(int x, int y)

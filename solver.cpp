@@ -3,13 +3,15 @@
 #include <QSet>
 #include <QSetIterator>
 #include <QListIterator>
+#include <QThread>
 #include "hole.h"
 #include "constraint.h"
 #include "configurationiterator.h"
 #include <algorithm>
 
-Solver::Solver(ProblemParameters * params)
+Solver::Solver(ProblemParameters * params, QThread * thread)
 {
+    this->thread = thread;
     boardHeight = params->height;
     boardWidth = params->width;
     bombs = params->bombs;
@@ -123,7 +125,7 @@ void Solver::setCell(int x, int y, DugType::DugType type){
         constraintList.removeOne(constraints[y][x]);
     }
 }
-double ** Solver::calculate()
+void Solver::calculate()
 {
     bool ** array = new bool*[constrainedUnopenedHoles->size()];
     int i = 0;
@@ -189,6 +191,11 @@ double ** Solver::calculate()
 
 
     delete array;
+    thread->quit();
+}
+
+double ** Solver::getProbabilityArray()
+{
     return probabilities;
 }
 

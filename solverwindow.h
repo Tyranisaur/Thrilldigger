@@ -13,6 +13,7 @@ namespace DugType {
 
 class QVBoxLayout;
 class Solver;
+class QThread;
 
 struct ProblemParameters;
 
@@ -27,6 +28,7 @@ public:
 
 private slots:
     void on_calculateButton_clicked();
+    void processCalculation();
     void cellSet(int x, int y);
 
 private:
@@ -34,6 +36,8 @@ private:
     QVBoxLayout *** cellGrid;
     DugType::DugType ** boardState;
     Solver * solver;
+    QThread * thread;
+    double ** probabilityArray;
     int boardWidth;
     int boardHeight;
 

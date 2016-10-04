@@ -3,22 +3,29 @@
 #include "dugtype.h"
 #include <QList>
 #include <QSet>
+#include <QObject>
 
 struct ProblemParameters;
 struct Hole;
 struct Constraint;
+class QThread;
 
-class Solver
+class Solver : public QObject
 {
+    Q_OBJECT
 public:
-    Solver(ProblemParameters * param);
+    Solver(ProblemParameters * param, QThread* thread);
     ~Solver();
 
     void setCell(int x, int y, DugType::DugType type);
-    double ** calculate();
+    double ** getProbabilityArray();
+
+public slots:
+    void calculate();
 
 
 private:
+    QThread * thread;
     double ** probabilities;
     QList<Constraint*> constraintList;
     Constraint *** constraints;
