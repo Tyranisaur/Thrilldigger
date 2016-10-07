@@ -39,19 +39,22 @@ void SettingsWindow::on_SimulatorButton_clicked()
         ui->bombsSpinner->value(),
         ui->rupoorsSpinner->value()
     };
-    if(params.height + params.width > 0 ){
-        if(simulator != nullptr)
+    if(params.height * params.width > 0 ){
+        if(params.height * params.width >= params.bombs + params.rupoors)
         {
-            simulator->close();
+            if(simulator != nullptr)
+            {
+                simulator->close();
+            }
+            simulator = new SimulatorWindow(&params);
+
+            connect(simulator,
+                    SIGNAL(destroyed(QObject*)),
+                    this,
+                    SLOT(simWindowDestroyed()));
+
+            simulator->show();
         }
-        simulator = new SimulatorWindow(&params);
-
-        connect(simulator,
-                SIGNAL(destroyed(QObject*)),
-                this,
-                SLOT(simWindowDestroyed()));
-
-        simulator->show();
     }
 }
 
@@ -63,19 +66,22 @@ void SettingsWindow::on_SolverButton_clicked()
         ui->bombsSpinner->value(),
         ui->rupoorsSpinner->value()
     };
-    if(params.height + params.width > 0 ){
-        if(solver != nullptr)
+    if(params.height * params.width > 0 ){
+        if(params.height * params.width >= params.bombs + params.rupoors)
         {
-            solver->close();
+            if(solver != nullptr)
+            {
+                solver->close();
+            }
+            solver = new SolverWindow(&params);
+
+            connect(solver,
+                    SIGNAL(destroyed(QObject*)),
+                    this,
+                    SLOT(solverWindowDestroyed()));
+
+            solver->show();
         }
-        solver = new SolverWindow(&params);
-
-        connect(solver,
-                SIGNAL(destroyed(QObject*)),
-                this,
-                SLOT(solverWindowDestroyed()));
-
-        solver->show();
     }
 }
 
