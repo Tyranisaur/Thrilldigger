@@ -40,7 +40,6 @@ private:
     int boardWidth;
     int bombs;
     int rupoors;
-    long long ** badSpotWeights;
     DugType::DugType ** board;
     bool validateBoard();
     unsigned long long choose(unsigned long long n, unsigned long long k);

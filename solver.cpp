@@ -8,6 +8,7 @@
 #include "constraint.h"
 #include "configurationiterator.h"
 #include <algorithm>
+#include <iostream>
 
 Solver::Solver(ProblemParameters * params, QThread * thread)
 {
@@ -22,14 +23,12 @@ Solver::Solver(ProblemParameters * params, QThread * thread)
     holes = new Hole*[boardHeight];
     badSpots = new bool*[boardHeight];
     constraints = new Constraint**[boardWidth];
-    badSpotWeights = new long long *[boardWidth];
     for(int y = 0; y < boardHeight; y++)
     {
         board[y] = new DugType::DugType[boardWidth];
         holes[y] = new Hole[boardWidth];
         badSpots[y] = new bool[boardWidth];
         constraints[y] = new Constraint*[boardWidth];
-        badSpotWeights[y] = new long long[boardWidth];
         for(int x = 0; x < boardWidth; x++)
         {
             constraints[y][x] = nullptr;
@@ -49,6 +48,7 @@ Solver::Solver(ProblemParameters * params, QThread * thread)
         }
     }
     knownBadSpots = 0;
+    std::cout << std::endl;
 }
 
 Solver::~Solver()
@@ -95,15 +95,15 @@ void Solver::setCell(int x, int y, DugType::DugType type){
                     {
                         if(filterX != x || filterY != y)
                         {
-                            if(board[filterY][filterX] == DugType::DugType::undug)
+                            if(badSpots[filterY][filterX])
+                            {
+                                constraint->maxBadness--;
+                            }
+                            else if(board[filterY][filterX] == DugType::DugType::undug)
                             {
                                 constraint->holes.append(&holes[filterY][filterX]);
                                 constrainedUnopenedHoles->insert(&holes[filterY][filterX]);
                                 unconstrainedUnopenedHoles->remove(&holes[filterY][filterX]);
-                            }
-                            else if(board[filterY][filterX] >= -2 && board[filterY][filterX] < 0)
-                            {
-                                constraint->maxBadness--;
                             }
 
                         }
@@ -141,21 +141,24 @@ void Solver::calculate()
                 array,
                 i,
                 std::max(bombs + rupoors - knownBadSpots - unconstrainedUnopenedHoles->size(), 0),
-                std::min(i, bombs + rupoors));
+                std::min(i, bombs + rupoors - knownBadSpots));
     long long configurationWeight;
     long long totalWeight = 0;
     for(int y = 0; y < boardHeight; y++)
     {
-        std::fill(badSpotWeights[y], badSpotWeights[y] + boardWidth, 0);
         std::fill(probabilities[y], probabilities[y] + boardWidth, 0.0);
     }
+    int totalIterations = 0;
+    int legalIterations = 0;
     do
     {
         bombsAmongConstrainedHoles = it.iterate() + knownBadSpots;
+        totalIterations++;
         if(!validateBoard())
         {
             continue;
         }
+        legalIterations++;
         configurationWeight = choose(
                     unconstrainedUnopenedHoles->size(),
                     bombs + rupoors - bombsAmongConstrainedHoles);
@@ -180,10 +183,26 @@ void Solver::calculate()
     }
     while(it.hasNext());
 
+    std::cout << totalIterations << " configurations evaluated, found  " << legalIterations  << " legal ones" << std::endl;
     for(int y = 0; y < boardHeight; y++)
     {
         for(int x = 0; x < boardWidth; x++)
         {
+            if(probabilities[y][x] == totalWeight)
+            {
+                if(constrainedUnopenedHoles->contains(&holes[y][x]))
+                {
+
+                    knownBadSpots++;
+
+                    constrainedUnopenedHoles->remove(&holes[y][x]);
+                    badSpots[y][x] = true;
+                }
+            }
+            else
+            {
+                badSpots[y][x] = false;
+            }
             probabilities[y][x] /= totalWeight;
         }
     }
@@ -225,7 +244,7 @@ bool Solver::validateBoard()
         listIter = new QListIterator<Hole*>(constraint->holes);
         while(listIter->hasNext())
         {
-            constrainedHole= listIter->next();
+            constrainedHole = listIter->next();
             if(badSpots[constrainedHole->y][constrainedHole->x])
             {
                 badSpotsSeen++;
@@ -235,12 +254,10 @@ bool Solver::validateBoard()
                 badSpotsSeen + 1 != constraint->maxBadness)
         {
             delete listIter;
-            listIter = nullptr;
             return false;
         }
     }
     delete listIter;
-    listIter = nullptr;
     return true;
 }
 
