@@ -184,6 +184,13 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="bothButton">
+         <property name="text">
+          <string>Both</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
     </layout>

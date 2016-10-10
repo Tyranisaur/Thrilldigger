@@ -1,6 +1,6 @@
 #ifndef BOARD_H
 #define BOARD_H
-#include "celltype.h"
+#include "DugType.h"
 
 
 
@@ -14,14 +14,14 @@ public:
     Board(ProblemParameters * params);
     ~Board();
 
-    CellType::CellType getCell(int x, int y);
+    DugType::DugType getCell(int x, int y);
     bool hasWon();
 
 private:
     int height;
     int width;
     bool ** opened;
-    CellType::CellType ** boardRep;
+    DugType::DugType ** boardRep;
 };
 
 

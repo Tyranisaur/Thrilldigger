@@ -14,6 +14,7 @@ namespace DugType {
 class QVBoxLayout;
 class Solver;
 class QThread;
+class QCloseEvent;
 
 struct ProblemParameters;
 
@@ -25,11 +26,16 @@ class SolverWindow : public QMainWindow
 public:
     explicit SolverWindow(ProblemParameters * params, QWidget *parent = 0);
     ~SolverWindow();
+    void closeEvent(QCloseEvent * e);
 
 private slots:
     void on_calculateButton_clicked();
     void processCalculation();
     void cellSet(int x, int y);
+    void cellOpened(int x, int y, DugType::DugType type);
+
+signals:
+    void closing();
 
 private:
     Ui::SolverWindow *ui;

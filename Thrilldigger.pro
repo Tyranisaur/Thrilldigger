@@ -27,7 +27,6 @@ HEADERS  += \
     solverwindow.h \
     solver.h \
     dugtype.h \
-    celltype.h \
     problemparameters.h \
     hole.h \
     configurationiterator.h \

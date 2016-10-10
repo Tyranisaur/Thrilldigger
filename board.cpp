@@ -7,16 +7,16 @@ Board::Board(ProblemParameters * params)
     int holes = params->height * params->width;
     height = params->height;
     width = params->width;
-    boardRep = new CellType::CellType*[params->height];
+    boardRep = new DugType::DugType*[params->height];
     opened = new bool*[height];
     for(int i = 0; i < params->height; i++)
     {
         opened[i] = new bool[width];
-        boardRep[i] = new CellType::CellType[params->width];
+        boardRep[i] = new DugType::DugType[params->width];
         for(int j = 0; j < params->width; j++)
         {
             opened[i][j] = false;
-            boardRep[i][j] = CellType::CellType::green;
+            boardRep[i][j] = DugType::DugType::green;
         }
     }
     int index;
@@ -30,12 +30,12 @@ Board::Board(ProblemParameters * params)
         x = index % params->width;
         y = index / params->width;
 
-        if(boardRep[y][x] == CellType::CellType::bomb)
+        if(boardRep[y][x] == DugType::DugType::bomb)
         {
             b--;
             continue;
         }
-        boardRep[y][x] = CellType::CellType::bomb;
+        boardRep[y][x] = DugType::DugType::bomb;
 
     }
     for(int r = 0; r < params->rupoors; r++)
@@ -44,12 +44,12 @@ Board::Board(ProblemParameters * params)
         x = index % params->width;
         y = index / params->width;
 
-        if(boardRep[y][x] != CellType::CellType::green)
+        if(boardRep[y][x] != DugType::DugType::green)
         {
             r--;
             continue;
         }
-        boardRep[y][x] = CellType::CellType::rupoor;
+        boardRep[y][x] = DugType::DugType::rupoor;
 
     }
 
@@ -59,7 +59,7 @@ Board::Board(ProblemParameters * params)
     {
         for(int x = 0; x < params->width; x++)
         {
-            if(boardRep[y][x] == CellType::CellType::green)
+            if(boardRep[y][x] == DugType::DugType::green)
             {
                 badspots = 0;
                 for(int filterY = y - 1; filterY < y + 2; filterY++)
@@ -84,23 +84,23 @@ Board::Board(ProblemParameters * params)
                 switch(badspots)
                 {
                 case 0:
-                    boardRep[y][x] = CellType::CellType::green;
+                    boardRep[y][x] = DugType::DugType::green;
                     break;
                 case 1:
                 case 2:
-                    boardRep[y][x] = CellType::CellType::blue;
+                    boardRep[y][x] = DugType::DugType::blue;
                     break;
                 case 3:
                 case 4:
-                    boardRep[y][x] = CellType::CellType::red;
+                    boardRep[y][x] = DugType::DugType::red;
                     break;
                 case 5:
                 case 6:
-                    boardRep[y][x] = CellType::CellType::silver;
+                    boardRep[y][x] = DugType::DugType::silver;
                     break;
                 case 7:
                 case 8:
-                    boardRep[y][x] = CellType::CellType::gold;
+                    boardRep[y][x] = DugType::DugType::gold;
                     break;
                 }
             }
@@ -113,7 +113,7 @@ Board::~Board()
     delete[] boardRep;
 }
 
-CellType::CellType Board::getCell(int x, int y)
+DugType::DugType Board::getCell(int x, int y)
 {
     opened[y][x] = true;
     return boardRep[y][x];

@@ -2,6 +2,7 @@
 #include "ui_simulatorwindow.h"
 #include "board.h"
 #include "problemparameters.h"
+#include "DugType.h"
 #include <QPushButton>
 
 SimulatorWindow::SimulatorWindow(ProblemParameters * params, QWidget *parent ) :
@@ -47,10 +48,10 @@ SimulatorWindow::~SimulatorWindow()
 void SimulatorWindow::cellOpened(int x, int y)
 {
     QPushButton * button = cellGrid[y][x];
-    CellType::CellType value = board->getCell(x, y);
+    DugType::DugType value = board->getCell(x, y);
     switch(value)
     {
-    case CellType::CellType::bomb:
+    case DugType::DugType::bomb:
         button->setStyleSheet("background: black");
         for(int y = 0; y < boardHeight; y++)
         {
@@ -60,27 +61,27 @@ void SimulatorWindow::cellOpened(int x, int y)
             }
         }
         break;
-    case CellType::CellType::rupoor:
+    case DugType::DugType::rupoor:
         button->setStyleSheet("background: gray");
         rupeeTotal = rupeeTotal - 10 < 0 ? 0 : rupeeTotal - 10;
         break;
-    case CellType::CellType::green:
+    case DugType::DugType::green:
         button->setStyleSheet("background: green");
         rupeeTotal += 1;
         break;
-    case CellType::CellType::blue:
+    case DugType::DugType::blue:
         button->setStyleSheet("background: blue");
         rupeeTotal += 5;
         break;
-    case CellType::CellType::red:
+    case DugType::DugType::red:
         button->setStyleSheet("background: red");
         rupeeTotal += 20;
         break;
-    case CellType::CellType::silver:
+    case DugType::DugType::silver:
         button->setStyleSheet("background: silver");
         rupeeTotal += 100;
         break;
-    case CellType::CellType::gold:
+    case DugType::DugType::gold:
         button->setStyleSheet("background: gold");
         rupeeTotal += 300;
         break;
@@ -97,4 +98,10 @@ void SimulatorWindow::cellOpened(int x, int y)
     QString text = "Rupees: " + QString::number(rupeeTotal);
     ui->scoreLabel->setText(text);
     button->setEnabled(false);
+    emit openedCell(x, y, value);
+}
+
+void SimulatorWindow::closeEvent(QCloseEvent * e)
+{
+    emit closing();
 }

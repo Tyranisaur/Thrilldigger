@@ -171,3 +171,49 @@ void SolverWindow::cellSet(int x, int y)
 
 }
 
+void SolverWindow::cellOpened(int x, int y, DugType::DugType type)
+{
+    QComboBox * menuButton = (QComboBox *)cellGrid[y][x]->itemAt(1)->widget();
+    QString text;
+    QPushButton * button = (QPushButton *)cellGrid[y][x]->itemAt(0)->widget();
+    switch(type)
+    {
+    case DugType::DugType::bomb:
+        text = "Bomb";
+        button->setStyleSheet("background: black");
+        break;
+    case DugType::DugType::rupoor:
+        text = "Rupoor";
+        button->setStyleSheet("background: gray");
+        break;
+    case DugType::DugType::green:
+        text = "Green";
+        button->setStyleSheet("background: green");
+        break;
+    case DugType::DugType::blue:
+        text = "Blue";
+        button->setStyleSheet("background: blue");
+        break;
+    case DugType::DugType::red:
+        text = "Red";
+        button->setStyleSheet("background: red");
+        break;
+    case DugType::DugType::silver:
+        text = "Silver";
+        button->setStyleSheet("background: silver");
+        break;
+    case DugType::DugType::gold:
+        text = "Gold";
+        button->setStyleSheet("background: gold");
+        break;
+    }
+    menuButton->setCurrentText(text);
+    solver->setCell(x, y,type);
+}
+
+void SolverWindow::closeEvent(QCloseEvent * e)
+{
+    emit closing();
+}
+
+

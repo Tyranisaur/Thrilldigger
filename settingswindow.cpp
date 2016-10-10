@@ -3,6 +3,7 @@
 #include "simulatorwindow.h"
 #include "solverwindow.h"
 #include "problemparameters.h"
+#include "DugType.h"
 
 
 SettingsWindow::SettingsWindow(QWidget *parent) :
@@ -17,7 +18,6 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
 
 SettingsWindow::~SettingsWindow()
 {
-    delete ui;
     if(simulator != nullptr)
     {
         simulator->close();
@@ -26,6 +26,7 @@ SettingsWindow::~SettingsWindow()
     {
         solver->close();
     }
+    delete ui;
 }
 
 
@@ -40,7 +41,7 @@ void SettingsWindow::on_SimulatorButton_clicked()
         ui->rupoorsSpinner->value()
     };
     if(params.height * params.width > 0 ){
-        if(params.height * params.width >= params.bombs + params.rupoors)
+        if(params.height * params.width > params.bombs + params.rupoors)
         {
             if(simulator != nullptr)
             {
@@ -49,7 +50,7 @@ void SettingsWindow::on_SimulatorButton_clicked()
             simulator = new SimulatorWindow(&params);
 
             connect(simulator,
-                    SIGNAL(destroyed(QObject*)),
+                    SIGNAL(closing()),
                     this,
                     SLOT(simWindowDestroyed()));
 
@@ -67,7 +68,7 @@ void SettingsWindow::on_SolverButton_clicked()
         ui->rupoorsSpinner->value()
     };
     if(params.height * params.width > 0 ){
-        if(params.height * params.width >= params.bombs + params.rupoors)
+        if(params.height * params.width > params.bombs + params.rupoors)
         {
             if(solver != nullptr)
             {
@@ -76,7 +77,7 @@ void SettingsWindow::on_SolverButton_clicked()
             solver = new SolverWindow(&params);
 
             connect(solver,
-                    SIGNAL(destroyed(QObject*)),
+                    SIGNAL(closing()),
                     this,
                     SLOT(solverWindowDestroyed()));
 
@@ -138,4 +139,69 @@ void SettingsWindow::simWindowDestroyed()
 void SettingsWindow::solverWindowDestroyed()
 {
     solver = nullptr;
+}
+void SettingsWindow::closeEvent(QCloseEvent *e)
+{
+    if(simulator != nullptr)
+    {
+        simulator->close();
+    }
+    if(solver != nullptr)
+    {
+        solver->close();
+    }
+}
+
+void SettingsWindow::on_bothButton_clicked()
+{
+    ProblemParameters params = {
+        ui->widthSpinner->value(),
+        ui->heightSpinner->value(),
+        ui->bombsSpinner->value(),
+        ui->rupoorsSpinner->value()
+    };
+    if(params.height * params.width > 0 ){
+        if(params.height * params.width > params.bombs + params.rupoors)
+        {
+            if(solver != nullptr)
+            {
+                solver->close();
+            }
+            if(simulator != nullptr)
+            {
+                simulator->close();
+            }
+            solver = new SolverWindow(&params);
+            simulator = new SimulatorWindow(&params);
+
+            connect(simulator,
+                    SIGNAL(closing()),
+                    this,
+                    SLOT(simWindowDestroyed()));
+
+
+            connect(solver,
+                    SIGNAL(closing()),
+                    this,
+                    SLOT(solverWindowDestroyed()));
+
+            connect(simulator,
+                    SIGNAL(openedCell(int, int, DugType::DugType)),
+                    solver,
+                    SLOT(cellOpened(int, int, DugType::DugType)));
+
+            connect(solver,
+                    SIGNAL(destroyed(QObject*)),
+                    simulator,
+                    SLOT(close()));
+
+            connect(simulator,
+                    SIGNAL(destroyed(QObject*)),
+                    solver,
+                    SLOT(close()));
+
+            simulator->show();
+            solver->show();
+        }
+    }
 }

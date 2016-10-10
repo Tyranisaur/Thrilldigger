@@ -8,6 +8,7 @@ class SettingsWindow;
 }
 class SimulatorWindow;
 class SolverWindow;
+class QCloseEvent;
 
 class SettingsWindow : public QMainWindow
 {
@@ -16,6 +17,7 @@ class SettingsWindow : public QMainWindow
 public:
     explicit SettingsWindow(QWidget *parent = 0);
     ~SettingsWindow();
+    void closeEvent(QCloseEvent * e);
 
 private slots:
 
@@ -34,6 +36,8 @@ private slots:
     void simWindowDestroyed();
 
     void solverWindowDestroyed();
+
+    void on_bothButton_clicked();
 
 private:
     Ui::SettingsWindow *ui;

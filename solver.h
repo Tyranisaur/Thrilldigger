@@ -42,6 +42,8 @@ private:
     int rupoors;
     DugType::DugType ** board;
     bool validateBoard();
+    void setKnownSafeSpot(int x, int y);
+    void setKnownBadSpot(int x, int y);
     unsigned long long choose(unsigned long long n, unsigned long long k);
 };
 
