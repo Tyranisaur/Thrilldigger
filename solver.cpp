@@ -2,12 +2,10 @@
 #include "problemparameters.h"
 #include <QSet>
 #include <QSetIterator>
-#include <QListIterator>
 #include <QThread>
 #include "hole.h"
 #include "constraint.h"
 #include "configurationiterator.h"
-#include <algorithm>
 #include <iostream>
 
 Solver::Solver(ProblemParameters * params, QThread * thread)
@@ -142,8 +140,8 @@ void Solver::calculate()
                 i,
                 std::max(bombs + rupoors - knownBadSpots - unconstrainedUnopenedHoles->size(), 0),
                 std::min(i, bombs + rupoors - knownBadSpots));
-    long long configurationWeight;
-    long long totalWeight = 0;
+    unsigned long long configurationWeight;
+    unsigned long long totalWeight = 0;
     for(int y = 0; y < boardHeight; y++)
     {
         std::fill(probabilities[y], probabilities[y] + boardWidth, 0.0);
@@ -175,8 +173,8 @@ void Solver::calculate()
         {
             hole = setIter.next();
             probabilities[hole->y][hole->x] +=
-                    (double)configurationWeight *
-                    (double)(bombs + rupoors - bombsAmongConstrainedHoles)/
+                    (double)(configurationWeight *
+                    (bombs + rupoors - bombsAmongConstrainedHoles))/
                     unconstrainedUnopenedHoles->size();
         }
 
@@ -229,35 +227,41 @@ bool Solver::validateBoard()
         return false;
     }
     int badSpotsSeen;
-    QListIterator<Constraint*> constraintListIter(constraintList);
-    QListIterator<Hole*> * listIter = nullptr;;
     Constraint* constraint;
     Hole * constrainedHole;
-    while(constraintListIter.hasNext())
+    for(int j = constraintList.length() - 1; j >= 0; j--)
     {
-        constraint = constraintListIter.next();
+        constraint = constraintList.at(j);
         badSpotsSeen = 0;
-        if(listIter != nullptr)
+        for(int i = constraint->holes.length() - 1; i >= 0; i--)
         {
-            delete listIter;
-        }
-        listIter = new QListIterator<Hole*>(constraint->holes);
-        while(listIter->hasNext())
-        {
-            constrainedHole = listIter->next();
+            constrainedHole = constraint->holes.at(i);
             if(badSpots[constrainedHole->y][constrainedHole->x])
             {
                 badSpotsSeen++;
+            }
+            if(board[constrainedHole->y][constrainedHole->x] >= -2)
+            {
+                constraint->holes.removeAt(i);
+                if(board[constrainedHole->y][constrainedHole->x] < 0)
+                {
+                    constraint->maxBadness--;
+                    badSpotsSeen--;
+                }
+
             }
         }
         if(badSpotsSeen != constraint->maxBadness &&
                 badSpotsSeen + 1 != constraint->maxBadness)
         {
-            delete listIter;
             return false;
         }
+        if(constraint->maxBadness == 0 && constraint->holes.length() == 0)
+        {
+            constraintList.removeAt(j);
+        }
+
     }
-    delete listIter;
     return true;
 }
 
