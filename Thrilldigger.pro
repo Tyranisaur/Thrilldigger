@@ -18,7 +18,8 @@ SOURCES += main.cpp \
     board.cpp \
     solverwindow.cpp \
     solver.cpp \
-    configurationiterator.cpp
+    configurationiterator.cpp \
+    partitioniterator.cpp
 
 HEADERS  += \
     settingswindow.h \
@@ -30,7 +31,9 @@ HEADERS  += \
     problemparameters.h \
     hole.h \
     configurationiterator.h \
-    constraint.h
+    constraint.h \
+    partition.h \
+    partitioniterator.h
 
 FORMS    += \
     settingswindow.ui \

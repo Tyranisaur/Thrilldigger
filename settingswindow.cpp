@@ -4,6 +4,7 @@
 #include "solverwindow.h"
 #include "problemparameters.h"
 #include "DugType.h"
+#include <QCloseEvent>
 
 
 SettingsWindow::SettingsWindow(QWidget *parent) :
@@ -150,6 +151,7 @@ void SettingsWindow::closeEvent(QCloseEvent *e)
     {
         solver->close();
     }
+    e->accept();
 }
 
 void SettingsWindow::on_bothButton_clicked()

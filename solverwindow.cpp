@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QMovie>
 #include <QThread>
+#include <QCloseEvent>
 
 SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
     QMainWindow(parent),
@@ -27,7 +28,7 @@ SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
     connect(thread,
             SIGNAL(started()),
             solver,
-            SLOT(calculate()));
+            SLOT(partitionCalculate()));
     connect(thread,
             SIGNAL(finished()),
             this,
@@ -208,12 +209,12 @@ void SolverWindow::cellOpened(int x, int y, DugType::DugType type)
         break;
     }
     menuButton->setCurrentText(text);
-    solver->setCell(x, y,type);
 }
 
 void SolverWindow::closeEvent(QCloseEvent * e)
 {
     emit closing();
+    e->accept();
 }
 
 

@@ -8,6 +8,7 @@
 struct ProblemParameters;
 struct Hole;
 struct Constraint;
+struct Partition;
 class QThread;
 
 class Solver : public QObject
@@ -21,7 +22,9 @@ public:
     double ** getProbabilityArray();
 
 public slots:
-    void calculate();
+    void standardCalculate();
+    void partitionCalculate();
+
 
 
 private:
@@ -31,8 +34,10 @@ private:
     Constraint *** constraints;
     bool ** badSpots;
     Hole ** holes;
+    QSet<Constraint*> *** imposingConstraints;
     QSet<Hole*> * constrainedUnopenedHoles;
     QSet<Hole*> * unconstrainedUnopenedHoles;
+    QList<Partition*>* partitionList;
 
     int bombsAmongConstrainedHoles;
     int knownBadSpots;
@@ -44,6 +49,7 @@ private:
     bool validateBoard();
     void setKnownSafeSpot(int x, int y);
     void setKnownBadSpot(int x, int y);
+    void generatePartitions();
     unsigned long long choose(unsigned long long n, unsigned long long k);
 };
 

@@ -4,6 +4,7 @@
 #include "problemparameters.h"
 #include "DugType.h"
 #include <QPushButton>
+#include <QCloseEvent>
 
 SimulatorWindow::SimulatorWindow(ProblemParameters * params, QWidget *parent ) :
     QMainWindow(parent),
@@ -104,4 +105,5 @@ void SimulatorWindow::cellOpened(int x, int y)
 void SimulatorWindow::closeEvent(QCloseEvent * e)
 {
     emit closing();
+    e->accept();
 }
