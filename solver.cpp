@@ -383,7 +383,6 @@ uint64_t Solver::choose(uint64_t n, uint64_t k) {
 
 void Solver::setKnownBadSpot(int x, int y)
 {
-    std::cout << x << ", " << y << " considered bad" << std::endl;
     badSpots[y][x] = true;
     probabilities[y][x] = 1.0;
     knownBadSpots++;
@@ -427,7 +426,6 @@ void Solver::setKnownBadSpot(int x, int y)
 
 void Solver::setKnownSafeSpot(int x, int y)
 {
-        std::cout << x << ", " << y << " considered safe" << std::endl;
     constrainedUnopenedHoles->remove(&holes[y][x]);
     unconstrainedUnopenedHoles->remove(&holes[y][x]);
     probabilities[y][x] = 0.0;

@@ -20,6 +20,7 @@ private:
     int sumBadSpots;
     int arrayLength;
     int * maxAmountsPerPartition;
+    int * minAmountsPerPartition;
     bool ** badSpots;
 };
 
