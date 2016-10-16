@@ -64,10 +64,6 @@ Solver::~Solver()
 }
 
 void Solver::setCell(int x, int y, DugType::DugType type){
-    if(type != DugType::DugType::undug)
-    {
-        unconstrainedUnopenedHoles->remove(&holes[y][x]);
-    }
     if(board[y][x] >= -2 && board[y][x] < 0)
     {
         knownBadSpots--;
@@ -89,7 +85,6 @@ void Solver::setCell(int x, int y, DugType::DugType type){
 
         constrainedUnopenedHoles->remove(&holes[y][x]);
         badSpots[y][x] = false;
-        setKnownSafeSpot(x, y);
 
         for(int filterY = y - 1; filterY < y + 2; filterY++)
         {
@@ -130,7 +125,8 @@ void Solver::setCell(int x, int y, DugType::DugType type){
             }
         }
         constraints[y][x] = constraint;
-        if(constraint->maxBadness >= 0)
+        setKnownSafeSpot(x, y);
+        if(constraint->maxBadness > 0)
         {
             constraintList.append(constraint);
         }
@@ -210,6 +206,7 @@ void Solver::standardCalculate()
                 if(constrainedUnopenedHoles->contains(&holes[y][x]))
                 {
                     setKnownBadSpot(x, y);
+                    probabilities[y][x] = totalWeight;
                 }
             }
             else
@@ -302,26 +299,17 @@ void Solver::partitionCalculate()
             {
                 if(probabilities[y][x] == totalWeight)
                 {
-                    if(constrainedUnopenedHoles->contains(&holes[y][x]) ||
-                            unconstrainedUnopenedHoles->contains(&holes[y][x]))
-                    {
-                        setKnownBadSpot(x, y);
-                        probabilities[y][x] = totalWeight;
-                    }
+                    setKnownBadSpot(x, y);
+                }
+                else if(probabilities[y][x] == 0.0)
+                {
+                    setKnownSafeSpot(x, y);
                 }
                 else
                 {
                     badSpots[y][x] = false;
+                    probabilities[y][x] /= totalWeight;
                 }
-                if(probabilities[y][x] == 0.0)
-                {
-                    if(constrainedUnopenedHoles->contains(&holes[y][x]) ||
-                            unconstrainedUnopenedHoles->contains(&holes[y][x]))
-                    {
-                        setKnownSafeSpot(x, y);
-                    }
-                }
-                probabilities[y][x] /= totalWeight;
             }
         }
     }
@@ -383,9 +371,14 @@ uint64_t Solver::choose(uint64_t n, uint64_t k) {
 
 void Solver::setKnownBadSpot(int x, int y)
 {
+    std::cout << x << ", " << y << " Bad" << std::endl;
+    if(constrainedUnopenedHoles->contains(&holes[y][x]) ||
+            unconstrainedUnopenedHoles->contains(&holes[y][x]))
+    {
+        knownBadSpots++;
+    }
     badSpots[y][x] = true;
     probabilities[y][x] = 1.0;
-    knownBadSpots++;
     constrainedUnopenedHoles->remove(&holes[y][x]);
     unconstrainedUnopenedHoles->remove(&holes[y][x]);
     Constraint * constraint;
@@ -426,6 +419,7 @@ void Solver::setKnownBadSpot(int x, int y)
 
 void Solver::setKnownSafeSpot(int x, int y)
 {
+    std::cout << x << ", " << y << " Safe" << std::endl;
     constrainedUnopenedHoles->remove(&holes[y][x]);
     unconstrainedUnopenedHoles->remove(&holes[y][x]);
     probabilities[y][x] = 0.0;
