@@ -37,10 +37,11 @@ private:
     QSet<Constraint*> *** imposingConstraints;
     QSet<Hole*> * constrainedUnopenedHoles;
     QSet<Hole*> * unconstrainedUnopenedHoles;
+    QSet<Hole*> * knownSafeSpots;
+    QSet<Hole*> * knownBadSpots;
     QList<Partition*>* partitionList;
 
     int bombsAmongConstrainedHoles;
-    int knownBadSpots;
     int boardHeight;
     int boardWidth;
     int bombs;

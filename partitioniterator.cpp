@@ -54,6 +54,7 @@ PartitionIterator::PartitionIterator(QList<Partition*>* partitionList, bool ** b
 PartitionIterator::~PartitionIterator()
 {
     delete maxAmountsPerPartition;
+    delete minAmountsPerPartition;
 }
 
 bool PartitionIterator::hasNext()
