@@ -103,6 +103,7 @@ void SolverWindow::on_calculateButton_clicked()
 void SolverWindow::processCalculation()
 {
     QPushButton * button;
+    double lowest = 1.0;
     for(int y = 0; y < boardHeight; y++)
     {
         for(int x = 0; x < boardWidth; x++)
@@ -111,6 +112,22 @@ void SolverWindow::processCalculation()
             {
                 button = (QPushButton *)cellGrid[y][x]->itemAt(0)->widget();
                 button->setText(QString::number( probabilityArray[y][x] * 100, 'f', 2) + "% Bad");
+                lowest = std::min(lowest, probabilityArray[y][x]);
+                button->setStyleSheet("background: none");
+            }
+        }
+    }
+    for(int y = 0; y < boardHeight; y++)
+    {
+        for(int x = 0; x < boardWidth; x++)
+        {
+            if(boardState[y][x] == DugType::DugType::undug)
+            {
+                if(probabilityArray[y][x] == lowest)
+                {
+                    button = (QPushButton *)cellGrid[y][x]->itemAt(0)->widget();
+                    button->setStyleSheet("background: cyan");
+                }
             }
         }
     }
