@@ -6,7 +6,6 @@ ConfigurationIterator::ConfigurationIterator(
         int lowBound,
         int highBound)
 {
-    started = false;
     numBadSpots = 0;
     this->badSpotArray = badSpotArray;
     numConstrainedHoles = arrayLength;
@@ -43,51 +42,41 @@ ConfigurationIterator::~ConfigurationIterator()
 
 bool ConfigurationIterator::hasNext()
 {
-    started = true;
-    for(int i = 0; i < arrayLength; i++)
+    for(int i = arrayLength - 1; i >= 0; i--)
     {
         if(indexArray[i] < maxIndexArray[i])
         {
+            *badSpotArray[indexArray[i]] = false;
+            numBadSpots--;
+            indexArray[i]++;
+            if(indexArray[i] < numConstrainedHoles)
+            {
+                numBadSpots++;
+                *badSpotArray[indexArray[i]] = true;
+            }
+            for(int j = i + 1; j < arrayLength; j++)
+            {
+                if(indexArray[j] < numConstrainedHoles)
+                {
+                    numBadSpots--;
+                    *badSpotArray[indexArray[j]] = false;
+                }
+                indexArray[j] = indexArray[j-1] + 1;
+                if(indexArray[j] < numConstrainedHoles)
+                {
+                    numBadSpots++;
+                    *badSpotArray[indexArray[j]] = true;
+                }
+            }
             return true;
         }
+
     }
     return false;
 
 }
 
-int ConfigurationIterator::iterate()
+int ConfigurationIterator::next()
 {
-    if(started)
-    {
-        for(int i = arrayLength - 1; i >= 0; i--)
-        {
-            if(indexArray[i] < maxIndexArray[i])
-            {
-                *badSpotArray[indexArray[i]] = false;
-                numBadSpots--;
-                indexArray[i]++;
-                if(indexArray[i] < numConstrainedHoles)
-                {
-                    numBadSpots++;
-                    *badSpotArray[indexArray[i]] = true;
-                }
-                for(int j = i + 1; j < arrayLength; j++)
-                {
-                    if(indexArray[j] < numConstrainedHoles)
-                    {
-                        numBadSpots--;
-                        *badSpotArray[indexArray[j]] = false;
-                    }
-                    indexArray[j] = indexArray[j-1] + 1;
-                    if(indexArray[j] < numConstrainedHoles)
-                    {
-                        numBadSpots++;
-                        *badSpotArray[indexArray[j]] = true;
-                    }
-                }
-                return numBadSpots;
-            }
-        }
-    }
     return numBadSpots;
 }

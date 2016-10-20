@@ -51,7 +51,7 @@ private:
     void setKnownSafeSpot(int x, int y);
     void setKnownBadSpot(int x, int y);
     void generatePartitions();
-    unsigned long long choose(unsigned long long n, unsigned long long k);
+    double choose(unsigned long long n, unsigned long long k);
 };
 
 #endif // SOLVER_H

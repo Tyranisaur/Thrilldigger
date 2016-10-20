@@ -55,15 +55,16 @@ Solver::~Solver()
 {
     delete knownBadSpots;
     delete knownSafeSpots;
+    delete [] imposingConstraints;
+    qDeleteAll(*partitionList);
     delete partitionList;
-    delete[] imposingConstraints;
-    delete[] board;
+    delete [] board;
     delete [] badSpots;
     delete [] holes;
     delete [] constraints;
     delete constrainedUnopenedHoles;
     delete unconstrainedUnopenedHoles;
-    delete[] probabilities;
+    delete [] probabilities;
 }
 
 void Solver::setCell(int x, int y, DugType::DugType type){
@@ -158,8 +159,9 @@ void Solver::standardCalculate()
                 i,
                 std::max(bombs + rupoors - knownBadSpots->size() - unconstrainedUnopenedHoles->size(), 0),
                 std::min(i, bombs + rupoors - knownBadSpots->size()));
-    uint64_t configurationWeight;
-    uint64_t totalWeight = 0;
+    double configurationWeight;
+    double totalWeight = 0;
+    double probability;
     for(int y = 0; y < boardHeight; y++)
     {
         std::fill(probabilities[y], probabilities[y] + boardWidth, 0.0);
@@ -168,7 +170,7 @@ void Solver::standardCalculate()
     int legalIterations = 0;
     do
     {
-        bombsAmongConstrainedHoles = it.iterate() + knownBadSpots->size();
+        bombsAmongConstrainedHoles = it.next() + knownBadSpots->size();
         totalIterations++;
         if(!validateBoard())
         {
@@ -187,15 +189,15 @@ void Solver::standardCalculate()
             }
         }
         setIter = QSetIterator<Hole*>(*unconstrainedUnopenedHoles);
+        probability = (double)(configurationWeight *
+                               (bombs + rupoors - bombsAmongConstrainedHoles))/
+                unconstrainedUnopenedHoles->size();
+
         while( setIter.hasNext())
         {
             hole = setIter.next();
-            probabilities[hole->y][hole->x] +=
-                    (double)(configurationWeight *
-                             (bombs + rupoors - bombsAmongConstrainedHoles))/
-                    unconstrainedUnopenedHoles->size();
+            probabilities[hole->y][hole->x] += probability;
         }
-
     }
     while(it.hasNext());
 
@@ -233,11 +235,11 @@ void Solver::partitionCalculate()
     generatePartitions();
     PartitionIterator it(partitionList, badSpots);
     QSetIterator<Hole*> setIter(*constrainedUnopenedHoles);
-    uint64_t configurationWeight;
+    double configurationWeight;
     uint64_t partitionWeight;
     int configurationBadness;
     Hole * hole;
-    uint64_t totalWeight = 0;
+    double totalWeight = 0;
     double probability;
     for(int y = 0; y < boardHeight; y++)
     {
@@ -250,7 +252,7 @@ void Solver::partitionCalculate()
             }
         }
     }
-    int totalIterations = 0;
+    uint64_t totalIterations = 0;
     int legalIterations = 0;
     do
     {
@@ -279,13 +281,13 @@ void Solver::partitionCalculate()
         }
 
         setIter = QSetIterator<Hole*>(*unconstrainedUnopenedHoles);
+        probability = (double)(configurationWeight * (bombs + rupoors - bombsAmongConstrainedHoles))/
+                unconstrainedUnopenedHoles->size();
         while( setIter.hasNext())
         {
             hole = setIter.next();
-            probabilities[hole->y][hole->x] +=
-                    (double)(configurationWeight *
-                             (bombs + rupoors - bombsAmongConstrainedHoles))/
-                    unconstrainedUnopenedHoles->size();
+            probabilities[hole->y][hole->x] += probability;
+
         }
 
     }
@@ -340,11 +342,11 @@ bool Solver::validateBoard()
     int badSpotsSeen;
     Constraint* constraint;
     Hole * constrainedHole;
-    for(int j = constraintList.length() - 1; j >= 0; j--)
+    for(int j = constraintList.size() - 1; j >= 0; j--)
     {
         constraint = constraintList.at(j);
         badSpotsSeen = 0;
-        for(int i = constraint->holes.length() - 1; i >= 0; i--)
+        for(int i = constraint->holes.size() - 1; i >= 0; i--)
         {
             constrainedHole = constraint->holes.at(i);
             if(badSpots[constrainedHole->y][constrainedHole->x])
@@ -362,11 +364,11 @@ bool Solver::validateBoard()
     return true;
 }
 
-uint64_t Solver::choose(uint64_t n, uint64_t k) {
+double Solver::choose(uint64_t n, uint64_t k) {
     if (k > n ) {
-        return 0;
+        return 0.0;
     }
-    uint64_t r = 1;
+    double r = 1.0;
     for (uint64_t d = 1; d <= k; ++d) {
         r *= n--;
         r /= d;
@@ -441,7 +443,7 @@ void Solver::setKnownSafeSpot(int x, int y)
                     constraint = constraints[filterY][filterX];
                     if ( (constraintList.contains(constraint) )    &&
                          (constraint->holes.removeOne(&holes[y][x]))    &&
-                         (constraint->maxBadness - 1 == constraint->holes.length()) )
+                         (constraint->maxBadness - 1 == constraint->holes.size()) )
                     {
                         while(constraint->holes.size() > 0)
                         {
@@ -479,7 +481,7 @@ void Solver::generatePartitions()
         {
             if(*(partitionList->at(i)) == *partition)
             {
-                delete partition->holes;
+
                 delete partition;
                 partition = partitionList->at(i);
                 present = true;

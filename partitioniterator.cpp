@@ -12,9 +12,9 @@ PartitionIterator::PartitionIterator(QList<Partition*>* partitionList, bool ** b
     arrayLength = partitionList->size();
     maxAmountsPerPartition = new int[arrayLength];
     minAmountsPerPartition = new int[arrayLength];
+    weights = new int[arrayLength];
     this->badSpots = badSpots;
     sumBadSpots = 0;
-    weight = 1;
     QSetIterator<Constraint*> * it;
     Constraint * constraint;
     Partition * partition;
@@ -38,7 +38,7 @@ PartitionIterator::PartitionIterator(QList<Partition*>* partitionList, bool ** b
         delete it;
         partition->badness = minAmountsPerPartition[i];
         sumBadSpots += minAmountsPerPartition[i];
-        weight *= choose(partition->holes->size(), partition->badness);
+        weights[i] = choose(partition->holes->size(), partition->badness);
         for(int j = 0; j < minAmountsPerPartition[i]; j++)
         {
             badSpots[partition->holes->at(j)->y][partition->holes->at(j)->x] = true;
@@ -48,36 +48,17 @@ PartitionIterator::PartitionIterator(QList<Partition*>* partitionList, bool ** b
             badSpots[partition->holes->at(j)->y][partition->holes->at(j)->x] = false;
         }
     }
-    started = false;
 }
 
 PartitionIterator::~PartitionIterator()
 {
     delete maxAmountsPerPartition;
     delete minAmountsPerPartition;
+    delete weights;
 }
 
 bool PartitionIterator::hasNext()
 {
-    for(int i = 0; i < arrayLength; i++)
-    {
-        if(maxAmountsPerPartition[i] > partitionList->at(i)->badness)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-void PartitionIterator::iterate(uint64_t* iterationWeight, int* badness)
-{
-    if(!started)
-    {
-        started = true;
-        *iterationWeight = weight;
-        *badness = sumBadSpots;
-        return;
-    }
     Hole * hole;
     Partition * partition;
     for(int i = arrayLength - 1; i >= 0; i--)
@@ -86,19 +67,16 @@ void PartitionIterator::iterate(uint64_t* iterationWeight, int* badness)
         if(partition->badness < maxAmountsPerPartition[i])
         {
             hole = partition->holes->at(partition->badness);
-            weight /= choose(partition->holes->size(), partition->badness);
             partition->badness++;
             badSpots[hole->y][hole->x] = true;
             sumBadSpots++;
-            weight *= choose(partition->holes->size(), partition->badness);
+            weights[i] = choose(partition->holes->size(), partition->badness);
             for( i += 1; i < arrayLength; i++)
             {
                 partition = partitionList->at(i);
-                weight /= choose(partition->holes->size(), partition->badness);
                 sumBadSpots -= (partition->badness - minAmountsPerPartition[i]);
-
                 partition->badness = minAmountsPerPartition[i];
-                weight *= choose(partition->holes->size(), partition->badness);
+                weights[i] = choose(partition->holes->size(), partition->badness);
 
                 for(int j = minAmountsPerPartition[i]; j < partition->holes->size(); j++)
                 {
@@ -106,19 +84,28 @@ void PartitionIterator::iterate(uint64_t* iterationWeight, int* badness)
                     badSpots[hole->y][hole->x] = false;
                 }
             }
-            *iterationWeight = weight;
-            *badness = sumBadSpots;
-            return;
+            return true;
         }
     }
-    return;
+    return false;
 }
 
-uint64_t PartitionIterator::choose(uint64_t n, uint64_t k) {
+void PartitionIterator::iterate(uint64_t* iterationWeight, int* badness)
+{
+    *iterationWeight = 1;
+    for(int i = 0; i < arrayLength; i++)
+    {
+        *iterationWeight *= weights[i];
+    }
+    *badness = sumBadSpots;
+
+}
+
+int PartitionIterator::choose(int n, int k) {
     if (k > n ) {
         return 0;
     }
-    uint64_t r = 1;
+    int r = 1;
     for (uint64_t d = 1; d <= k; ++d) {
         r *= n--;
         r /= d;

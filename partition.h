@@ -11,10 +11,17 @@ struct Partition{
     QList<Hole*> * holes;
     int badness;
 
-    bool operator==(Partition other)
+    bool operator==(Partition & other)
     {
         return *(this->constraints) == *(other.constraints);
     }
+
+    ~Partition()
+    {
+        delete holes;
+    }
+
+
 
 };
 

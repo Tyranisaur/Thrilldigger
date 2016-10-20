@@ -9,12 +9,11 @@ public:
     ~ConfigurationIterator();
     bool hasNext();
 
-    int iterate();
+    int next();
 
 private:
     bool ** badSpotArray;
     int numConstrainedHoles;
-    bool started;
     int* maxIndexArray;
     int* indexArray;
     int arrayLength;

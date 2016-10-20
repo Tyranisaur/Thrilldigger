@@ -13,10 +13,9 @@ public:
     void iterate(uint64_t * weight, int * badness);
 
 private:
-    bool started;
-    uint64_t choose(uint64_t n, uint64_t k);
+    int choose(int n, int k);
     QList<Partition*>* partitionList;
-    uint64_t weight;
+    int * weights;
     int sumBadSpots;
     int arrayLength;
     int * maxAmountsPerPartition;
