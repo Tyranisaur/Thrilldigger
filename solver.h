@@ -50,6 +50,7 @@ private:
     bool validateBoard();
     void setKnownSafeSpot(int x, int y);
     void setKnownBadSpot(int x, int y);
+    void resetBoard();
     void generatePartitions();
     double choose(unsigned long long n, unsigned long long k);
 };

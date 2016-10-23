@@ -78,7 +78,7 @@ bool PartitionIterator::hasNext()
                 partition->badness = minAmountsPerPartition[i];
                 weights[i] = choose(partition->holes->size(), partition->badness);
 
-                for(int j = minAmountsPerPartition[i]; j < partition->holes->size(); j++)
+                for(int j = minAmountsPerPartition[i]; j < maxAmountsPerPartition[i]; j++)
                 {
                     hole = partition->holes->at(j);
                     badSpots[hole->y][hole->x] = false;
