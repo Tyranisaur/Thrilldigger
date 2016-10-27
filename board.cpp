@@ -125,7 +125,7 @@ bool Board::hasWon()
     {
         for(int x = 0; x < width; x++)
         {
-            if(!opened[y][x] && boardRep[y][x] > 0)
+            if(!opened[y][x] && boardRep[y][x] >= 0)
             {
                 return false;
             }

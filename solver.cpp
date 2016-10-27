@@ -48,7 +48,7 @@ Solver::Solver(ProblemParameters * params, QThread * thread)
             imposingConstraints[y][x] = new QSet<Constraint*>;
         }
     }
-    std::cout << "Total iterations\tLegal iterations\tPartitions\tConstrained holes" << std::endl;
+    std::cout << "True number of configurations\tTotal iterations\tLegal iterations\tPartitions\tSunken Partitions\tConstrained holes" << std::endl;
 }
 
 Solver::~Solver()
@@ -142,9 +142,6 @@ void Solver::resetBoard()
 {
 
     qDeleteAll(*partitionList);
-    delete [] imposingConstraints;
-    delete [] badSpots;
-    delete [] holes;
     delete [] constraints;
     constraintList.clear();
     partitionList->clear();
@@ -152,23 +149,16 @@ void Solver::resetBoard()
     unconstrainedUnopenedHoles->clear();
     knownBadSpots->clear();
     knownSafeSpots->clear();
-    holes = new Hole*[boardHeight];
-    badSpots = new bool*[boardHeight];
     constraints = new Constraint**[boardHeight];
-    imposingConstraints = new QSet<Constraint*>**[boardHeight];
     for(int y = 0; y < boardHeight; y++)
     {
-        holes[y] = new Hole[boardWidth];
-        badSpots[y] = new bool[boardWidth];
         constraints[y] = new Constraint*[boardWidth];
-        imposingConstraints[y] = new QSet<Constraint*>*[boardWidth];
         std::fill(constraints[y], constraints[y] + boardWidth, nullptr);
         std::fill(badSpots[y], badSpots[y] + boardWidth, false);
         for(int x = 0; x < boardWidth; x++)
         {
-            holes[y][x] = {x, y};
             unconstrainedUnopenedHoles->insert( &holes[y][x] );
-            imposingConstraints[y][x] = new QSet<Constraint*>;
+            imposingConstraints[y][x]->clear();
         }
     }
     for(int y = 0; y < boardHeight; y++)
@@ -242,7 +232,8 @@ void Solver::standardCalculate()
     }
     while(it.hasNext());
 
-    std::cout << totalIterations << "\t" <<
+    std::cout <<
+                 totalIterations << "\t" <<
                  legalIterations << "\t" <<
                  constrainedUnopenedHoles->size() << std::endl;
     for(int y = 0; y < boardHeight; y++)
@@ -274,7 +265,8 @@ void Solver::standardCalculate()
 void Solver::partitionCalculate()
 {
     generatePartitions();
-    PartitionIterator it(partitionList, badSpots);
+    QList<Partition*> sunkenPartitions;
+    PartitionIterator it(partitionList, badSpots, &sunkenPartitions);
     QSetIterator<Hole*> setIter(*constrainedUnopenedHoles);
     double configurationWeight;
     uint64_t partitionWeight;
@@ -320,7 +312,6 @@ void Solver::partitionCalculate()
                 probabilities[hole->y][hole->x] += probability;
             }
         }
-
         setIter = QSetIterator<Hole*>(*unconstrainedUnopenedHoles);
         probability = (double)(configurationWeight * (bombs + rupoors - bombsAmongConstrainedHoles))/
                 unconstrainedUnopenedHoles->size();
@@ -334,9 +325,22 @@ void Solver::partitionCalculate()
     }
     while(it.hasNext());
 
-    std::cout << totalIterations << "\t" <<
+    for(int i = 0; i < sunkenPartitions.size(); i++)
+    {
+        probability = totalWeight *
+                sunkenPartitions.at(i)->badness /
+                (double) sunkenPartitions.at(i)->holes->size();
+        for(int j = 0; j < sunkenPartitions.at(i)->holes->size(); j++)
+        {
+            hole = sunkenPartitions.at(i)->holes->at(j);
+            probabilities[hole->y][hole->x] += probability;
+        }
+    }
+    std::cout << totalWeight << "\t" <<
+                 totalIterations << "\t" <<
                  legalIterations << "\t" <<
-                 partitionList->size() << "\t" <<
+                 partitionList->size() + sunkenPartitions.size() << "\t" <<
+                 sunkenPartitions.size() << "\t" <<
                  constrainedUnopenedHoles->size() << std::endl;
     for(int y = 0; y < boardHeight; y++)
     {
@@ -361,6 +365,7 @@ void Solver::partitionCalculate()
             }
         }
     }
+    qDeleteAll(sunkenPartitions);
 
     thread->quit();
 }
@@ -419,7 +424,6 @@ double Solver::choose(uint64_t n, uint64_t k) {
 
 void Solver::setKnownBadSpot(int x, int y)
 {
-    std::cout << x << ", " << y << " Bad" << std::endl;
     knownBadSpots->insert(&holes[y][x]);
     badSpots[y][x] = true;
     probabilities[y][x] = 1.0;
@@ -464,7 +468,6 @@ void Solver::setKnownBadSpot(int x, int y)
 
 void Solver::setKnownSafeSpot(int x, int y)
 {
-    std::cout << x << ", " << y << " Safe" << std::endl;
     knownSafeSpots->insert(&holes[y][x]);
     constrainedUnopenedHoles->remove(&holes[y][x]);
     unconstrainedUnopenedHoles->remove(&holes[y][x]);
@@ -505,10 +508,8 @@ void Solver::setKnownSafeSpot(int x, int y)
 
 void Solver::generatePartitions()
 {
-    for(int i = partitionList->size() - 1; i >= 0; i--)
-    {
-        delete partitionList->takeAt(i);
-    }
+    qDeleteAll(*partitionList);
+    partitionList->clear();
     QSetIterator<Hole*> iter(*constrainedUnopenedHoles);
     Hole* constrainedHole;
     Partition * partition;

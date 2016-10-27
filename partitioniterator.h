@@ -7,7 +7,11 @@ struct Partition;
 class PartitionIterator
 {
 public:
-    PartitionIterator(QList<Partition*>* partitionList, bool ** badspots);
+    PartitionIterator(
+            QList<Partition*>* partitionList,
+            bool ** badspots,
+            QList<Partition*>* sunkenPartitions);
+
     ~PartitionIterator();
     bool hasNext();
     void iterate(uint64_t * weight, int * badness);
@@ -15,11 +19,11 @@ public:
 private:
     int choose(int n, int k);
     QList<Partition*>* partitionList;
-    int * weights;
+    QList<int> weights;
     int sumBadSpots;
-    int arrayLength;
-    int * maxAmountsPerPartition;
-    int * minAmountsPerPartition;
+    int listLength;
+    QList<int> maxAmountsPerPartition;
+    QList<int> minAmountsPerPartition;
     bool ** badSpots;
 };
 
