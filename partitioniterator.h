@@ -10,18 +10,23 @@ public:
     PartitionIterator(
             QList<Partition*>* partitionList,
             bool ** badspots,
-            QList<Partition*>* sunkenPartitions);
+            QList<Partition*>* sunkenPartitions,
+            int numBadSpots);
 
     ~PartitionIterator();
     bool hasNext();
-    void iterate(uint64_t * weight, int * badness);
+    void iterate(double * weight);
 
 private:
-    int choose(int n, int k);
+    double choose(int n, int k);
     QList<Partition*>* partitionList;
-    QList<int> weights;
+    double weight;
+    int * indexArray;
+    int indexArrayLength;
     int sumBadSpots;
+    int totalBadness;
     int listLength;
+    bool started;
     QList<int> maxAmountsPerPartition;
     QList<int> minAmountsPerPartition;
     bool ** badSpots;

@@ -266,11 +266,14 @@ void Solver::partitionCalculate()
 {
     generatePartitions();
     QList<Partition*> sunkenPartitions;
-    PartitionIterator it(partitionList, badSpots, &sunkenPartitions);
-    QSetIterator<Hole*> setIter(*constrainedUnopenedHoles);
+    PartitionIterator it(
+                partitionList,
+                badSpots,
+                &sunkenPartitions,
+                bombs + rupoors - knownBadSpots->size());
+
+    bombsAmongConstrainedHoles = bombs + rupoors;
     double configurationWeight;
-    uint64_t partitionWeight;
-    int configurationBadness;
     Hole * hole;
     double totalWeight = 0;
     double probability;
@@ -287,19 +290,16 @@ void Solver::partitionCalculate()
     }
     uint64_t totalIterations = 0;
     int legalIterations = 0;
-    do
+    while(it.hasNext())
     {
-        it.iterate(&partitionWeight, &configurationBadness);
-        bombsAmongConstrainedHoles = configurationBadness + knownBadSpots->size();
+        it.iterate(&configurationWeight);
         totalIterations++;
         if(!validateBoard())
         {
             continue;
         }
         legalIterations++;
-        configurationWeight = partitionWeight * choose(
-                    unconstrainedUnopenedHoles->size(),
-                    bombs + rupoors - bombsAmongConstrainedHoles);
+
         totalWeight += configurationWeight;
 
         for(int i = 0; i < partitionList->size(); i++)
@@ -312,18 +312,10 @@ void Solver::partitionCalculate()
                 probabilities[hole->y][hole->x] += probability;
             }
         }
-        setIter = QSetIterator<Hole*>(*unconstrainedUnopenedHoles);
-        probability = (double)(configurationWeight * (bombs + rupoors - bombsAmongConstrainedHoles))/
-                unconstrainedUnopenedHoles->size();
-        while( setIter.hasNext())
-        {
-            hole = setIter.next();
-            probabilities[hole->y][hole->x] += probability;
 
-        }
 
     }
-    while(it.hasNext());
+
 
     for(int i = 0; i < sunkenPartitions.size(); i++)
     {
@@ -538,5 +530,13 @@ void Solver::generatePartitions()
         {
             partitionList->append(partition);
         }
+    }
+    if(unconstrainedUnopenedHoles->size() > 0)
+    {
+        partition = new Partition;
+        partition->constraints = new QSet<Constraint*>;
+        partition->holes = new QList<Hole*>;
+        *(partition->holes) << unconstrainedUnopenedHoles->toList();
+        partitionList->prepend(partition);
     }
 }
