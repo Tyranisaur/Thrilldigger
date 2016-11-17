@@ -15,7 +15,7 @@ public:
 
     ~PartitionIterator();
     bool hasNext();
-    void iterate(double * weight);
+    double iterate();
 
 private:
     double choose(int n, int k);
@@ -23,8 +23,6 @@ private:
     double weight;
     int * indexArray;
     int indexArrayLength;
-    int sumBadSpots;
-    int totalBadness;
     int listLength;
     bool started;
     QList<int> maxAmountsPerPartition;

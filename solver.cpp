@@ -290,9 +290,9 @@ void Solver::partitionCalculate()
     }
     uint64_t totalIterations = 0;
     int legalIterations = 0;
-    while(it.hasNext())
+    do
     {
-        it.iterate(&configurationWeight);
+        configurationWeight = it.iterate();
         totalIterations++;
         if(!validateBoard())
         {
@@ -315,6 +315,7 @@ void Solver::partitionCalculate()
 
 
     }
+    while(it.hasNext());
 
 
     for(int i = 0; i < sunkenPartitions.size(); i++)

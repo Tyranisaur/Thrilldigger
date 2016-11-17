@@ -14,7 +14,6 @@ PartitionIterator::PartitionIterator(
 {
     this->partitionList = partitionList;
     this->badSpots = badSpots;
-    sumBadSpots = 0;
     weight = 1.0;
     QSetIterator<Constraint*> * it;
     Constraint * constraint;
@@ -55,7 +54,6 @@ PartitionIterator::PartitionIterator(
         {
             badSpots[partition->holes->at(j)->y][partition->holes->at(j)->x] = false;
         }
-        sumBadSpots += minAmount;
         sumMin += minAmount;
         sumMax+= maxAmount;
         partition->badness = minAmount;
@@ -104,7 +102,6 @@ PartitionIterator::PartitionIterator(
 
         }
     }
-    totalBadness = numBadSpots - sunkenBadness;
     listLength = partitionList->size();
     indexArray = new int[indexArrayLength];
     int k = 0;
@@ -138,10 +135,7 @@ PartitionIterator::~PartitionIterator()
 
 bool PartitionIterator::hasNext()
 {
-    if(!started)
-    {
-        return true;
-    }
+
     int badness = 0;
     Partition * partition;
     for(int i = partitionList->size() - 1; i >= 0; i--)
@@ -161,15 +155,16 @@ bool PartitionIterator::hasNext()
     return false;
 
 
+
+
 }
 
-void PartitionIterator::iterate(double * iterationWeight)
+double PartitionIterator::iterate()
 {
     if(!started)
     {
-        *iterationWeight = weight;
         started = true;
-        return;
+        return weight;
     }
     Partition * partition;
     Partition * givingPartition;
@@ -235,12 +230,10 @@ void PartitionIterator::iterate(double * iterationWeight)
                 }
                 index++;
             }
-            *iterationWeight = weight;
-            return;
+            return weight;
         }
     }
-    *iterationWeight = 1.0;
-    return;
+    return weight;
 
 }
 
