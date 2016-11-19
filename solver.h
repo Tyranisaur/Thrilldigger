@@ -34,7 +34,7 @@ private:
     Constraint *** constraints;
     bool ** badSpots;
     Hole ** holes;
-    QSet<Constraint*> *** imposingConstraints;
+    QSet<Constraint*> ** imposingConstraints;
     QSet<Hole*> * constrainedUnopenedHoles;
     QSet<Hole*> * unconstrainedUnopenedHoles;
     QSet<Hole*> * knownSafeSpots;

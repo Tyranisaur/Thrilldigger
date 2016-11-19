@@ -18,10 +18,6 @@ struct Partition{
 
     ~Partition()
     {
-        if(constraints->size() == 0)
-        {
-            delete constraints;
-        }
         delete holes;
     }
 

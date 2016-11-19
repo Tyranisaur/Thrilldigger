@@ -26,7 +26,7 @@ Solver::Solver(ProblemParameters * params, QThread * thread)
     holes = new Hole*[boardHeight];
     badSpots = new bool*[boardHeight];
     constraints = new Constraint**[boardHeight];
-    imposingConstraints = new QSet<Constraint*>**[boardHeight];
+    imposingConstraints = new QSet<Constraint*>*[boardHeight];
 
     probabilities = new double*[boardHeight];
     for(int y = 0; y < boardHeight; y++)
@@ -35,7 +35,7 @@ Solver::Solver(ProblemParameters * params, QThread * thread)
         holes[y] = new Hole[boardWidth];
         badSpots[y] = new bool[boardWidth];
         constraints[y] = new Constraint*[boardWidth];
-        imposingConstraints[y] = new QSet<Constraint*>*[boardWidth];
+        imposingConstraints[y] = new QSet<Constraint*>[boardWidth];
         probabilities[y] = new double[boardWidth];
         std::fill(probabilities[y], probabilities[y] + boardWidth, 0.0);
         std::fill(constraints[y], constraints[y] + boardWidth, nullptr);
@@ -45,7 +45,6 @@ Solver::Solver(ProblemParameters * params, QThread * thread)
         {
             holes[y][x] = {x, y};
             unconstrainedUnopenedHoles->insert( &holes[y][x] );
-            imposingConstraints[y][x] = new QSet<Constraint*>;
         }
     }
     std::cout << "True number of configurations\tTotal iterations\tLegal iterations\tPartitions\tSunken Partitions\tConstrained holes" << std::endl;
@@ -101,7 +100,7 @@ void Solver::setCell(int x, int y, DugType::DugType type){
                             else if(board[filterY][filterX] == DugType::DugType::undug)
                             {
 
-                                imposingConstraints[filterY][filterX]->insert(constraint);
+                                imposingConstraints[filterY][filterX].insert(constraint);
 
                                 if(!knownSafeSpots->contains(&holes[filterY][filterX]))
                                 {
@@ -158,7 +157,7 @@ void Solver::resetBoard()
         for(int x = 0; x < boardWidth; x++)
         {
             unconstrainedUnopenedHoles->insert( &holes[y][x] );
-            imposingConstraints[y][x]->clear();
+            imposingConstraints[y][x].clear();
         }
     }
     for(int y = 0; y < boardHeight; y++)
@@ -424,6 +423,7 @@ void Solver::setKnownBadSpot(int x, int y)
     unconstrainedUnopenedHoles->remove(&holes[y][x]);
     Constraint * constraint;
     Hole * constrainedHole;
+    Hole * unimportantHole;
     for(int filterY = y - 1; filterY < y + 2; filterY++)
     {
         if(filterY >= 0 && filterY < boardHeight)
@@ -435,7 +435,8 @@ void Solver::setKnownBadSpot(int x, int y)
                         (board[filterY][filterX] > 0))
                 {
                     constraint = constraints[filterY][filterX];
-                    if(constraint != nullptr &&
+
+                    if( constraint != nullptr &&
                             constraint->holes.removeOne(&holes[y][x]))
                     {
                         constraint->maxBadness--;
@@ -450,6 +451,18 @@ void Solver::setKnownBadSpot(int x, int y)
                             if(constraintList.contains(constraint))
                             {
                                 constraintList.removeOne(constraint);
+                            }
+                        }
+                        else if(constraint->holes.size() == 1 &&
+                                constraint->maxBadness == 1)
+                        {
+                            unimportantHole = constraint->holes.at(0);
+                            imposingConstraints[unimportantHole->y][unimportantHole->x].remove(constraint);
+                            constraintList.removeOne(constraint);
+                            if(imposingConstraints[unimportantHole->y][unimportantHole->x].size() == 0)
+                            {
+                                constrainedUnopenedHoles->remove(unimportantHole);
+                                unconstrainedUnopenedHoles->insert(unimportantHole);
                             }
                         }
                     }
@@ -468,6 +481,7 @@ void Solver::setKnownSafeSpot(int x, int y)
     badSpots[y][x] = false;
     Constraint * constraint;
     Hole * constrainedHole;
+    Hole * unimportantHole;
     for(int filterY = y - 1; filterY < y + 2; filterY++)
     {
         if(filterY >= 0 && filterY < boardHeight)
@@ -479,18 +493,33 @@ void Solver::setKnownSafeSpot(int x, int y)
                         (board[filterY][filterX] > 0))
                 {
                     constraint = constraints[filterY][filterX];
-                    if ( (constraint != nullptr) &&
-                         (constraint->holes.removeOne(&holes[y][x]))    &&
-                         (constraint->maxBadness - 1 == constraint->holes.size()) )
+
+                    if(constraint != nullptr &&
+                            constraint->holes.removeOne(&holes[y][x]))
                     {
-                        while(constraint->holes.size() > 0)
+                        if(constraint->maxBadness - 1 == constraint->holes.size())
                         {
-                            constrainedHole = constraint->holes.takeFirst();
-                            setKnownBadSpot(constrainedHole->x, constrainedHole->y);
+                            while(constraint->holes.size() > 0)
+                            {
+                                constrainedHole = constraint->holes.takeFirst();
+                                setKnownBadSpot(constrainedHole->x, constrainedHole->y);
+                            }
+                            if(constraintList.contains(constraint) )
+                            {
+                                constraintList.removeOne(constraint);
+                            }
                         }
-                        if(constraintList.contains(constraint) )
+                        else if(constraint->holes.size() == 1 &&
+                                   constraint->maxBadness == 1)
                         {
+                            unimportantHole = constraint->holes.takeFirst();
+                            imposingConstraints[unimportantHole->y][unimportantHole->x].remove(constraint);
                             constraintList.removeOne(constraint);
+                            if(imposingConstraints[unimportantHole->y][unimportantHole->x].size() == 0)
+                            {
+                                constrainedUnopenedHoles->remove(unimportantHole);
+                                unconstrainedUnopenedHoles->insert(unimportantHole);
+                            }
                         }
                     }
                 }
@@ -511,7 +540,7 @@ void Solver::generatePartitions()
     {
         constrainedHole = iter.next();
         partition = new Partition;
-        partition->constraints = imposingConstraints[constrainedHole->y][constrainedHole->x];
+        partition->constraints = &imposingConstraints[constrainedHole->y][constrainedHole->x];
         partition->holes = new QList<Hole*>;
         present = false;
         for(int i = 0; i < partitionList->size(); i++)
@@ -525,8 +554,8 @@ void Solver::generatePartitions()
                 break;
             }
         }
-
         partition->holes->append(constrainedHole);
+
         if(!present)
         {
             partitionList->append(partition);

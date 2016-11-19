@@ -135,37 +135,6 @@ PartitionIterator::~PartitionIterator()
 
 bool PartitionIterator::hasNext()
 {
-
-    int badness = 0;
-    Partition * partition;
-    for(int i = partitionList->size() - 1; i >= 0; i--)
-    {
-        partition = partitionList->at(i);
-        badness += partition->badness - minAmountsPerPartition.at(i);
-        if(partition->badness < maxAmountsPerPartition.at(i) &&
-                badness < indexArrayLength)
-        {
-            return true;
-        }
-        else if(badness == indexArrayLength)
-        {
-            return false;
-        }
-    }
-    return false;
-
-
-
-
-}
-
-double PartitionIterator::iterate()
-{
-    if(!started)
-    {
-        started = true;
-        return weight;
-    }
     Partition * partition;
     Partition * givingPartition;
     Partition * receivingPartition;
@@ -177,7 +146,8 @@ double PartitionIterator::iterate()
     {
         partition = partitionList->at(i);
         badnessAccumulator += partition->badness - minAmountsPerPartition.at(i);
-        if(partition->badness < maxAmountsPerPartition.at(i))
+        if(partition->badness < maxAmountsPerPartition.at(i) &&
+                badnessAccumulator < indexArrayLength)
         {
 
             givingIndex = indexArrayLength - badnessAccumulator - 1;
@@ -230,9 +200,24 @@ double PartitionIterator::iterate()
                 }
                 index++;
             }
-            return weight;
+            return true;
+        }
+
+        else if(badnessAccumulator == indexArrayLength)
+        {
+            return false;
         }
     }
+    return false;
+
+
+
+
+}
+
+double PartitionIterator::iterate()
+{
+
     return weight;
 
 }
