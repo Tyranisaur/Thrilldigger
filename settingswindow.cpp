@@ -3,6 +3,7 @@
 #include "simulatorwindow.h"
 #include "solverwindow.h"
 #include "problemparameters.h"
+#include "benchmark.h"
 #include "DugType.h"
 #include <QCloseEvent>
 
@@ -206,4 +207,39 @@ void SettingsWindow::on_bothButton_clicked()
             solver->show();
         }
     }
+}
+
+void SettingsWindow::on_benchmarkButton_clicked()
+{
+    ProblemParameters * params = new ProblemParameters{
+            ui->widthSpinner->value(),
+            ui->heightSpinner->value(),
+            ui->bombsSpinner->value(),
+            ui->rupoorsSpinner->value()
+};
+    if(params->height * params->width > 0 ){
+        if(params->height * params->width > params->bombs + params->rupoors)
+        {
+            ui->SimulatorButton->setEnabled(false);
+            ui->SolverButton->setEnabled(false);
+            ui->bothButton->setEnabled(false);
+            ui->benchmarkButton->setEnabled(false);
+
+            benchmark = new Benchmark(params);
+            connect(benchmark,
+                    SIGNAL(done()),
+                    this,
+                    SLOT(benchmarkDone()));
+            benchmark->start();
+        }
+    }
+}
+
+void SettingsWindow::benchmarkDone()
+{
+    ui->SimulatorButton->setEnabled(true);
+    ui->SolverButton->setEnabled(true);
+    ui->bothButton->setEnabled(true);
+    ui->benchmarkButton->setEnabled(true);
+    delete benchmark;
 }

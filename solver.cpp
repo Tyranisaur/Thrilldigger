@@ -2,7 +2,6 @@
 #include "problemparameters.h"
 #include <QSet>
 #include <QSetIterator>
-#include <QThread>
 #include "hole.h"
 #include "constraint.h"
 #include "configurationiterator.h"
@@ -10,9 +9,8 @@
 #include "partition.h"
 #include <iostream>
 
-Solver::Solver(ProblemParameters * params, QThread * thread)
+Solver::Solver(ProblemParameters * params)
 {
-    this->thread = thread;
     boardHeight = params->height;
     boardWidth = params->width;
     bombs = params->bombs;
@@ -47,7 +45,7 @@ Solver::Solver(ProblemParameters * params, QThread * thread)
             unconstrainedUnopenedHoles->insert( &holes[y][x] );
         }
     }
-    std::cout << "True number of configurations\tTotal iterations\tLegal iterations\tPartitions\tSunken Partitions\tConstrained holes" << std::endl;
+    //std::cout << "True number of configurations\tTotal iterations\tLegal iterations\tPartitions\tSunken Partitions\tConstrained holes" << std::endl;
 }
 
 Solver::~Solver()
@@ -244,21 +242,24 @@ void Solver::standardCalculate()
                 if(!knownBadSpots->contains(&holes[y][x]))
                 {
                     setKnownBadSpot(x, y);
-                    probabilities[y][x] = totalWeight;
                 }
+            }
+            else if(probabilities[y][x] == 0.0)
+            {
+                setKnownSafeSpot(x, y);
             }
             else
             {
                 badSpots[y][x] = false;
+                probabilities[y][x] /= totalWeight;
             }
-            probabilities[y][x] /= totalWeight;
         }
     }
 
 
 
     delete array;
-    thread->quit();
+    emit done();
 }
 
 void Solver::partitionCalculate()
@@ -328,12 +329,12 @@ void Solver::partitionCalculate()
             probabilities[hole->y][hole->x] += probability;
         }
     }
-    std::cout << totalWeight << "\t" <<
-                 totalIterations << "\t" <<
-                 legalIterations << "\t" <<
-                 partitionList->size() + sunkenPartitions.size() << "\t" <<
-                 sunkenPartitions.size() << "\t" <<
-                 constrainedUnopenedHoles->size() << std::endl;
+//    std::cout << totalWeight << "\t" <<
+//                 totalIterations << "\t" <<
+//                 legalIterations << "\t" <<
+//                 partitionList->size() + sunkenPartitions.size() << "\t" <<
+//                 sunkenPartitions.size() << "\t" <<
+//                 constrainedUnopenedHoles->size() << std::endl;
     for(int y = 0; y < boardHeight; y++)
     {
         for(int x = 0; x < boardWidth; x++)
@@ -359,7 +360,7 @@ void Solver::partitionCalculate()
     }
     qDeleteAll(sunkenPartitions);
 
-    thread->quit();
+   emit done();
 }
 
 double ** Solver::getProbabilityArray()

@@ -22,15 +22,15 @@ SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
     QVBoxLayout * vLayout;
     QPushButton * button;
     QComboBox * menuButton;
-    solver = new Solver(params, thread);
+    solver = new Solver(params);
     probabilityArray = solver->getProbabilityArray();
     solver->moveToThread(thread);
     connect(thread,
             SIGNAL(started()),
             solver,
             SLOT(partitionCalculate()));
-    connect(thread,
-            SIGNAL(finished()),
+    connect(solver,
+            SIGNAL(done()),
             this,
             SLOT(processCalculation()));
     boardHeight = params->height;
@@ -102,6 +102,7 @@ void SolverWindow::on_calculateButton_clicked()
 
 void SolverWindow::processCalculation()
 {
+    thread->exit();
     QPushButton * button;
     double lowest = 1.0;
     for(int y = 0; y < boardHeight; y++)

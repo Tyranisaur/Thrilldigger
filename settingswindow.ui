@@ -43,7 +43,7 @@
      <rect>
       <x>40</x>
       <y>10</y>
-      <width>271</width>
+      <width>272</width>
       <height>221</height>
      </rect>
     </property>
@@ -184,10 +184,21 @@
          </property>
         </widget>
        </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
        <item>
         <widget class="QPushButton" name="bothButton">
          <property name="text">
           <string>Both</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="benchmarkButton">
+         <property name="text">
+          <string>Benchmark</string>
          </property>
         </widget>
        </item>

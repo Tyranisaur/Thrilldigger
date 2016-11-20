@@ -23,6 +23,7 @@ public:
     explicit SimulatorWindow(ProblemParameters * params, QWidget *parent = 0);
     ~SimulatorWindow();
     void closeEvent(QCloseEvent * e);
+    int numRupees();
 
 public slots:
 

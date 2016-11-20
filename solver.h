@@ -9,17 +9,19 @@ struct ProblemParameters;
 struct Hole;
 struct Constraint;
 struct Partition;
-class QThread;
 
 class Solver : public QObject
 {
     Q_OBJECT
 public:
-    Solver(ProblemParameters * param, QThread* thread);
+    Solver(ProblemParameters * param);
     ~Solver();
 
     void setCell(int x, int y, DugType::DugType type);
     double ** getProbabilityArray();
+
+signals:
+    void done();
 
 public slots:
     void standardCalculate();
@@ -28,7 +30,6 @@ public slots:
 
 
 private:
-    QThread * thread;
     double ** probabilities;
     QList<Constraint*> constraintList;
     Constraint *** constraints;

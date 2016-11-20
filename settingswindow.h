@@ -8,6 +8,7 @@ class SettingsWindow;
 }
 class SimulatorWindow;
 class SolverWindow;
+class Benchmark;
 class QCloseEvent;
 
 class SettingsWindow : public QMainWindow
@@ -39,7 +40,12 @@ private slots:
 
     void on_bothButton_clicked();
 
+    void on_benchmarkButton_clicked();
+
+    void benchmarkDone();
+
 private:
+    Benchmark * benchmark;
     Ui::SettingsWindow *ui;
     SimulatorWindow * simulator;
     SolverWindow * solver;
