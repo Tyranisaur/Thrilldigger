@@ -5,9 +5,9 @@
 #include "dugtype.h"
 #include <QObject>
 #include <QMap>
+#include "problemparameters.h"
 
 
-struct ProblemParameters;
 class QThread;
 
 class Solver;
@@ -18,7 +18,7 @@ class Benchmark : public QObject
 {
     Q_OBJECT
 public:
-    explicit Benchmark(ProblemParameters * params);
+    explicit Benchmark(ProblemParameters params);
     ~Benchmark();
 
     void start();
@@ -45,7 +45,7 @@ private:
     int totalClicks;
     QThread * thread;
     double ** probabilityArray;
-    ProblemParameters * params;
+    ProblemParameters params;
     Board * board;
     Solver * solver;
     DugType::DugType ** knownBoard;

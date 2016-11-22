@@ -6,9 +6,9 @@
 #include <QTime>
 #include <iostream>
 
-Benchmark::Benchmark(ProblemParameters * params)
+Benchmark::Benchmark(ProblemParameters params):
+    params(params)
 {
-    this->params = params;
     thread = new QThread;
     moveToThread(thread);
 
@@ -21,7 +21,6 @@ Benchmark::Benchmark(ProblemParameters * params)
 Benchmark::~Benchmark()
 {
     delete thread;
-    delete params;
 }
 
 void Benchmark::start()
@@ -38,21 +37,21 @@ void Benchmark::run()
     totalClicks = 0;
     totalSetupTime = 0;
     totalRunTime = 0;
-    knownBoard = new DugType::DugType*[params->height];
-    for(int y = 0; y < params->height; y++)
+    knownBoard = new DugType::DugType*[params.height];
+    for(int y = 0; y < params.height; y++)
     {
-        knownBoard[y] = new DugType::DugType[params->width];
+        knownBoard[y] = new DugType::DugType[params.width];
     }
     QTime timer;
     timer.start();
     for(int i = 0; i < 1000; i++)
     {
-        for(int y = 0; y < params->height; y++)
+        for(int y = 0; y < params.height; y++)
         {
-            std::fill(knownBoard[y], knownBoard[y] + params->width, DugType::DugType::undug);
+            std::fill(knownBoard[y], knownBoard[y] + params.width, DugType::DugType::undug);
         }
-        board = new Board(params);
-        solver = new Solver(params);
+        board = new Board(&params);
+        solver = new Solver(&params);
         probabilityArray = solver->getProbabilityArray();
 
         singleRun();
@@ -74,7 +73,7 @@ void Benchmark::run()
     //                     probabilityGoneBad.value(key) <<
     //                     std::endl;
     //    }
-    for(int y = 0; y < params->height; y++)
+    for(int y = 0; y < params.height; y++)
     {
         delete[] knownBoard[y];
 
@@ -108,9 +107,9 @@ void Benchmark::singleRun()
     while(!board->hasWon())
     {
         lowestprobability = 1.0;
-        for(int y = 0; y < params->height; y++)
+        for(int y = 0; y < params.height; y++)
         {
-            for(int x = 0; x < params->width; x++)
+            for(int x = 0; x < params.width; x++)
             {
                 if(knownBoard[y][x] == DugType::DugType::undug)
                 {
@@ -119,11 +118,11 @@ void Benchmark::singleRun()
                         neighborSum = 0.0;
                         for(int filterY = y - 1; filterY < y + 2; filterY++)
                         {
-                            if(filterY >= 0 && filterY < params->height)
+                            if(filterY >= 0 && filterY < params.height)
                             {
                                 for(int filterX = x - 1; filterX < x + 2; filterX++)
                                 {
-                                    if(filterX >= 0 && filterX < params->width)
+                                    if(filterX >= 0 && filterX < params.width)
                                     {
                                         if(filterX != x || filterY != y)
                                         {
@@ -143,11 +142,11 @@ void Benchmark::singleRun()
                         neighborSum = 0.0;
                         for(int filterY = y - 1; filterY < y + 2; filterY++)
                         {
-                            if(filterY >= 0 && filterY < params->height)
+                            if(filterY >= 0 && filterY < params.height)
                             {
                                 for(int filterX = x - 1; filterX < x + 2; filterX++)
                                 {
-                                    if(filterX >= 0 && filterX < params->width)
+                                    if(filterX >= 0 && filterX < params.width)
                                     {
                                         if(filterX != x || filterY != y)
                                         {

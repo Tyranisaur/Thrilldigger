@@ -211,14 +211,14 @@ void SettingsWindow::on_bothButton_clicked()
 
 void SettingsWindow::on_benchmarkButton_clicked()
 {
-    ProblemParameters * params = new ProblemParameters{
+    ProblemParameters params = ProblemParameters{
             ui->widthSpinner->value(),
             ui->heightSpinner->value(),
             ui->bombsSpinner->value(),
             ui->rupoorsSpinner->value()
 };
-    if(params->height * params->width > 0  &&
-        params->height * params->width > params->bombs + params->rupoors)
+    if(params.height * params.width > 0  &&
+        params.height * params.width > params.bombs + params.rupoors)
         {
             ui->SimulatorButton->setEnabled(false);
             ui->SolverButton->setEnabled(false);
@@ -232,10 +232,7 @@ void SettingsWindow::on_benchmarkButton_clicked()
                     SLOT(benchmarkDone()));
             benchmark->start();
         }
-    else
-    {
-        delete params;
-    }
+
 
 }
 

@@ -32,7 +32,7 @@ public slots:
 private:
     double ** probabilities;
     QList<Constraint*> constraintList;
-    Constraint *** constraints;
+    Constraint ** constraints;
     bool ** badSpots;
     Hole ** holes;
     QSet<Constraint*> ** imposingConstraints;

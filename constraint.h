@@ -6,8 +6,8 @@
 struct Hole;
 
 struct Constraint{
-    int x;
-    int y;
+    unsigned char x;
+    unsigned char y;
     int maxBadness;
     QList<Hole*> holes;
 };

@@ -23,26 +23,26 @@ Solver::Solver(ProblemParameters * params)
     board = new DugType::DugType*[boardHeight];
     holes = new Hole*[boardHeight];
     badSpots = new bool*[boardHeight];
-    constraints = new Constraint**[boardHeight];
+    constraints = new Constraint*[boardHeight];
     imposingConstraints = new QSet<Constraint*>*[boardHeight];
 
     probabilities = new double*[boardHeight];
-    for(int y = 0; y < boardHeight; y++)
+    for(uint8_t y = 0; y < boardHeight; y++)
     {
         board[y] = new DugType::DugType[boardWidth];
         holes[y] = new Hole[boardWidth];
         badSpots[y] = new bool[boardWidth];
-        constraints[y] = new Constraint*[boardWidth];
+        constraints[y] = new Constraint[boardWidth];
         imposingConstraints[y] = new QSet<Constraint*>[boardWidth];
         probabilities[y] = new double[boardWidth];
         std::fill(probabilities[y], probabilities[y] + boardWidth, 0.0);
-        std::fill(constraints[y], constraints[y] + boardWidth, nullptr);
         std::fill(badSpots[y], badSpots[y] + boardWidth, false);
         std::fill(board[y], board[y] + boardWidth, DugType::DugType::undug);
-        for(int x = 0; x < boardWidth; x++)
+        for(uint8_t x = 0; x < boardWidth; x++)
         {
             holes[y][x] = {x, y};
             unconstrainedUnopenedHoles->insert( &holes[y][x] );
+            constraints[y][x].maxBadness = -1;
         }
     }
     //std::cout << "True number of configurations\tTotal iterations\tLegal iterations\tPartitions\tSunken Partitions\tConstrained holes" << std::endl;
@@ -58,10 +58,7 @@ Solver::~Solver()
     delete unconstrainedUnopenedHoles;
     for(int y = 0; y < boardHeight; y++)
     {
-        for(int x = 0; x < boardWidth; x++)
-        {
-            delete constraints[y][x];
-        }
+
         delete[] probabilities[y];
         delete[] constraints[y];
         delete[] board[y];
@@ -87,9 +84,7 @@ void Solver::setCell(int x, int y, DugType::DugType type){
     board[y][x] = type;
     if(type >= 0)
     {
-        Constraint * constraint = new Constraint;
-        constraint->x = x;
-        constraint->y = y;
+        Constraint * constraint = &constraints[y][x];
         constraint->maxBadness = type;
 
         constrainedUnopenedHoles->remove(&holes[y][x]);
@@ -128,7 +123,6 @@ void Solver::setCell(int x, int y, DugType::DugType type){
                 }
             }
         }
-        constraints[y][x] = constraint;
         setKnownSafeSpot(x, y);
         if(constraint->maxBadness > 0)
         {
@@ -160,9 +154,9 @@ void Solver::resetBoard()
     {
         for(int x = 0; x < boardWidth; x++)
         {
-            delete constraints[y][x];
+            constraints[y][x].maxBadness = -1;
+            constraints[y][x].holes.clear();
         }
-        std::fill(constraints[y], constraints[y] + boardWidth, nullptr);
         std::fill(badSpots[y], badSpots[y] + boardWidth, false);
         for(int x = 0; x < boardWidth; x++)
         {
@@ -447,9 +441,9 @@ void Solver::setKnownBadSpot(int x, int y)
                         (filterX != x || filterY != y)      &&
                         (board[filterY][filterX] > 0))
                 {
-                    constraint = constraints[filterY][filterX];
+                    constraint = &constraints[filterY][filterX];
 
-                    if( constraint != nullptr &&
+                    if( constraint->maxBadness != -1 &&
                             constraint->holes.removeOne(&holes[y][x]))
                     {
                         constraint->maxBadness--;
@@ -505,9 +499,9 @@ void Solver::setKnownSafeSpot(int x, int y)
                         (filterX != x || filterY != y)      &&
                         (board[filterY][filterX] > 0))
                 {
-                    constraint = constraints[filterY][filterX];
+                    constraint = &constraints[filterY][filterX];
 
-                    if(constraint != nullptr &&
+                    if(constraint->maxBadness != -1 &&
                             constraint->holes.removeOne(&holes[y][x]))
                     {
                         if(constraint->maxBadness - 1 == constraint->holes.size())

@@ -2,8 +2,8 @@
 #define HOLE_H
 
 struct Hole{
-    int x;
-    int y;
+    unsigned char x;
+    unsigned char y;
 };
 
 #endif // HOLE_H
