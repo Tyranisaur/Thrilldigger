@@ -36,8 +36,8 @@ ConfigurationIterator::ConfigurationIterator(
 
 ConfigurationIterator::~ConfigurationIterator()
 {
-    delete indexArray;
-    delete maxIndexArray;
+    delete[] indexArray;
+    delete[] maxIndexArray;
 }
 
 bool ConfigurationIterator::hasNext()

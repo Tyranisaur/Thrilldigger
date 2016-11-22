@@ -130,7 +130,7 @@ PartitionIterator::PartitionIterator(
 
 PartitionIterator::~PartitionIterator()
 {
-    delete indexArray;
+    delete[] indexArray;
 }
 
 bool PartitionIterator::hasNext()

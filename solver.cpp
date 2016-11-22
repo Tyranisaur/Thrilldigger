@@ -52,16 +52,29 @@ Solver::~Solver()
 {
     delete knownBadSpots;
     delete knownSafeSpots;
-    delete [] imposingConstraints;
     qDeleteAll(*partitionList);
     delete partitionList;
-    delete [] board;
-    delete [] badSpots;
-    delete [] holes;
-    delete [] constraints;
     delete constrainedUnopenedHoles;
     delete unconstrainedUnopenedHoles;
-    delete [] probabilities;
+    for(int y = 0; y < boardHeight; y++)
+    {
+        for(int x = 0; x < boardWidth; x++)
+        {
+            delete constraints[y][x];
+        }
+        delete[] probabilities[y];
+        delete[] constraints[y];
+        delete[] board[y];
+        delete[] badSpots[y];
+        delete[] holes[y];
+    }
+    delete[] probabilities;
+    delete[] constraints;
+    delete[] imposingConstraints;
+    delete[] board;
+    delete[] badSpots;
+    delete[] holes;
+
 }
 
 void Solver::setCell(int x, int y, DugType::DugType type){
@@ -138,18 +151,17 @@ void Solver::setCell(int x, int y, DugType::DugType type){
 void Solver::resetBoard()
 {
 
-    qDeleteAll(*partitionList);
-    delete [] constraints;
     constraintList.clear();
-    partitionList->clear();
     constrainedUnopenedHoles->clear();
     unconstrainedUnopenedHoles->clear();
     knownBadSpots->clear();
     knownSafeSpots->clear();
-    constraints = new Constraint**[boardHeight];
     for(int y = 0; y < boardHeight; y++)
     {
-        constraints[y] = new Constraint*[boardWidth];
+        for(int x = 0; x < boardWidth; x++)
+        {
+            delete constraints[y][x];
+        }
         std::fill(constraints[y], constraints[y] + boardWidth, nullptr);
         std::fill(badSpots[y], badSpots[y] + boardWidth, false);
         for(int x = 0; x < boardWidth; x++)
@@ -258,7 +270,7 @@ void Solver::standardCalculate()
 
 
 
-    delete array;
+    delete[] array;
     emit done();
 }
 
@@ -565,7 +577,7 @@ void Solver::generatePartitions()
     if(unconstrainedUnopenedHoles->size() > 0)
     {
         partition = new Partition;
-        partition->constraints = new QSet<Constraint*>;
+        partition->constraints = &emptySet;
         partition->holes = new QList<Hole*>;
         *(partition->holes) << unconstrainedUnopenedHoles->toList();
         partitionList->prepend(partition);

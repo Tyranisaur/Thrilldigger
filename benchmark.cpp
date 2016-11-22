@@ -31,6 +31,7 @@ void Benchmark::start()
 
 void Benchmark::run()
 {
+    wins = 0;
     totalBadSpots = 0;
     totalProbabilities = 0.0;
     totalRupees = 0;
@@ -62,16 +63,21 @@ void Benchmark::run()
 
     }
     //    std::cout << totalBadSpots << "\t" << totalProbabilities << std::endl;
-    //    std::cout << totalClicks / 1000.0 << std::endl;
-    for(double key: probabilityCount.keys())
+    std::cout << wins / 1000.0 << std::endl;
+    //    for(double key: probabilityCount.keys())
+    //    {
+    //        std::cout <<
+    //                     key <<
+    //                     "\t" <<
+    //                     probabilityCount.value(key) <<
+    //                     "\t" <<
+    //                     probabilityGoneBad.value(key) <<
+    //                     std::endl;
+    //    }
+    for(int y = 0; y < params->height; y++)
     {
-        std::cout <<
-                     key <<
-                     "\t" <<
-                     probabilityCount.value(key) <<
-                     "\t" <<
-                     (double)probabilityGoneBad.value(key)/probabilityCount.value(key) <<
-                     std::endl;
+        delete[] knownBoard[y];
+
     }
     delete[] knownBoard;
     thread->exit();
@@ -84,6 +90,8 @@ void Benchmark::singleRun()
     QTime timer;
     DugType::DugType newSpot;
     double lowestprobability;
+    double highestNeighborSum = 0.0;
+    double neighborSum;
     int bestX;
     int bestY;
     int sumbadspots = 0;
@@ -104,12 +112,58 @@ void Benchmark::singleRun()
         {
             for(int x = 0; x < params->width; x++)
             {
-                if(knownBoard[y][x] == DugType::DugType::undug &&
-                        probabilityArray[y][x] < lowestprobability)
+                if(knownBoard[y][x] == DugType::DugType::undug)
                 {
-                    lowestprobability = probabilityArray[y][x];
-                    bestX = x;
-                    bestY = y;
+                    if(probabilityArray[y][x] < lowestprobability)
+                    {
+                        neighborSum = 0.0;
+                        for(int filterY = y - 1; filterY < y + 2; filterY++)
+                        {
+                            if(filterY >= 0 && filterY < params->height)
+                            {
+                                for(int filterX = x - 1; filterX < x + 2; filterX++)
+                                {
+                                    if(filterX >= 0 && filterX < params->width)
+                                    {
+                                        if(filterX != x || filterY != y)
+                                        {
+                                            neighborSum += probabilityArray[filterY][filterX];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        highestNeighborSum = neighborSum;
+                        lowestprobability = probabilityArray[y][x];
+                        bestX = x;
+                        bestY = y;
+                    }
+                    else if(probabilityArray[y][x] == lowestprobability)
+                    {
+                        neighborSum = 0.0;
+                        for(int filterY = y - 1; filterY < y + 2; filterY++)
+                        {
+                            if(filterY >= 0 && filterY < params->height)
+                            {
+                                for(int filterX = x - 1; filterX < x + 2; filterX++)
+                                {
+                                    if(filterX >= 0 && filterX < params->width)
+                                    {
+                                        if(filterX != x || filterY != y)
+                                        {
+                                            neighborSum += probabilityArray[filterY][filterX];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if(neighborSum > highestNeighborSum)
+                        {
+                            bestX = x;
+                            bestY = y;
+                            highestNeighborSum = neighborSum;
+                        }
+                    }
                 }
             }
         }
@@ -164,6 +218,10 @@ void Benchmark::singleRun()
         solver->partitionCalculate();
         individualRunTime = timer.elapsed();
         runTime += individualRunTime;
+    }
+    if(board->hasWon())
+    {
+        wins++;
     }
     totalClicks += clicks;
     totalBadSpots += sumbadspots;

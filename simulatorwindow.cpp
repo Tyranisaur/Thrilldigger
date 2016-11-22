@@ -28,9 +28,9 @@ SimulatorWindow::SimulatorWindow(ProblemParameters * params, QWidget *parent ) :
             connect(button,
                     &QPushButton::clicked,
                     [=]()
-                    {
-                        this->cellOpened(x, y);
-                    });
+            {
+                this->cellOpened(x, y);
+            });
 
             ui->gridLayout->addWidget(button, y, x, Qt::AlignHCenter);
         }
@@ -42,6 +42,14 @@ SimulatorWindow::~SimulatorWindow()
 {
     delete ui;
     delete board;
+    for(int y = 0; y < boardHeight; y++)
+    {
+        for(int x = 0; x < boardWidth; x++)
+        {
+            delete cellGrid[y][x];
+        }
+        delete[] cellGrid[y];
+    }
     delete[] cellGrid;
 }
 

@@ -15,6 +15,7 @@ class QVBoxLayout;
 class Solver;
 class QThread;
 class QCloseEvent;
+class QMovie;
 
 struct ProblemParameters;
 
@@ -40,6 +41,7 @@ signals:
 private:
     Ui::SolverWindow *ui;
     QVBoxLayout *** cellGrid;
+    QMovie * movie;
     DugType::DugType ** boardState;
     Solver * solver;
     QThread * thread;

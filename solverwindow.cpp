@@ -37,7 +37,7 @@ SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
     boardWidth = params->width;
     cellGrid = new QVBoxLayout **[boardHeight];
     boardState = new DugType::DugType *[boardHeight];
-    QMovie * movie = new QMovie("C:\\Users\\Torgeir\\Documents\\GitHub\\Thrilldigger\\ajax-loader.gif");
+    movie = new QMovie("C:\\Users\\Torgeir\\Documents\\GitHub\\Thrilldigger\\ajax-loader.gif");
     ui->animationLabel->setMovie(movie);
     movie->start();
     ui->animationLabel->hide();
@@ -85,11 +85,26 @@ SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
 
 SolverWindow::~SolverWindow()
 {
+    QComboBox * menuButton;
+    QPushButton * button;
+    for(int y = 0; y < boardHeight; y++)
+    {
+        for(int x = 0; x < boardWidth; x++)
+        {
+            menuButton = (QComboBox *)cellGrid[y][x]->itemAt(1)->widget();
+            button = (QPushButton *)cellGrid[y][x]->itemAt(0)->widget();
+            delete menuButton;
+            delete button;
+            delete cellGrid[y][x];
+        }
+        delete[] cellGrid[y];
+    }
     delete thread;
     delete ui;
     delete[] cellGrid;
     delete[] boardState;
     delete solver;
+    delete movie;
 }
 
 void SolverWindow::on_calculateButton_clicked()

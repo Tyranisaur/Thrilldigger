@@ -217,8 +217,8 @@ void SettingsWindow::on_benchmarkButton_clicked()
             ui->bombsSpinner->value(),
             ui->rupoorsSpinner->value()
 };
-    if(params->height * params->width > 0 ){
-        if(params->height * params->width > params->bombs + params->rupoors)
+    if(params->height * params->width > 0  &&
+        params->height * params->width > params->bombs + params->rupoors)
         {
             ui->SimulatorButton->setEnabled(false);
             ui->SolverButton->setEnabled(false);
@@ -232,7 +232,11 @@ void SettingsWindow::on_benchmarkButton_clicked()
                     SLOT(benchmarkDone()));
             benchmark->start();
         }
+    else
+    {
+        delete params;
     }
+
 }
 
 void SettingsWindow::benchmarkDone()

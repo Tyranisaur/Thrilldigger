@@ -19,6 +19,7 @@ struct Partition{
     ~Partition()
     {
         delete holes;
+
     }
 
 

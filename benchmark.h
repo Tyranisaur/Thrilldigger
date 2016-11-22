@@ -37,6 +37,7 @@ private:
     QMap<double, int> probabilityCount;
     QMap<double, int> probabilityGoneBad;
     int totalBadSpots;
+    int wins;
     uint64_t totalSetupTime;
     uint64_t totalRunTime;
     double totalProbabilities;

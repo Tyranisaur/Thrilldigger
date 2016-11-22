@@ -110,7 +110,13 @@ Board::Board(ProblemParameters * params)
 }
 Board::~Board()
 {
+    for(int y = 0; y < height; y++)
+    {
+        delete[] boardRep[y];
+        delete[] opened[y];
+    }
     delete[] boardRep;
+    delete[] opened;
 }
 
 DugType::DugType Board::getCell(int x, int y)
