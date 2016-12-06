@@ -1,8 +1,8 @@
-#include "simulatorwindow.h"
+#include "headers/simulatorwindow.h"
 #include "ui_simulatorwindow.h"
-#include "board.h"
-#include "problemparameters.h"
-#include "DugType.h"
+#include "headers/board.h"
+#include "headers/problemparameters.h"
+#include "headers/DugType.h"
 #include <QPushButton>
 #include <QCloseEvent>
 

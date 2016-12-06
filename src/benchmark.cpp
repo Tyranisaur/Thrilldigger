@@ -1,7 +1,7 @@
-#include "benchmark.h"
-#include "problemparameters.h"
-#include "solver.h"
-#include "board.h"
+#include "headers/benchmark.h"
+#include "headers/problemparameters.h"
+#include "headers/solver.h"
+#include "headers/board.h"
 #include <QThread>
 #include <QTime>
 #include <iostream>

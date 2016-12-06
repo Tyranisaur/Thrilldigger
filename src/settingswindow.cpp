@@ -1,10 +1,10 @@
-#include "settingswindow.h"
+#include "headers/settingswindow.h"
 #include "ui_settingswindow.h"
-#include "simulatorwindow.h"
-#include "solverwindow.h"
-#include "problemparameters.h"
-#include "benchmark.h"
-#include "DugType.h"
+#include "headers/simulatorwindow.h"
+#include "headers/solverwindow.h"
+#include "headers/problemparameters.h"
+#include "headers/benchmark.h"
+#include "headers/DugType.h"
 #include <QCloseEvent>
 
 

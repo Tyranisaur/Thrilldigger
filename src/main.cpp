@@ -1,4 +1,4 @@
-#include "settingswindow.h"
+#include "headers/settingswindow.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])

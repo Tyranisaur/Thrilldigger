@@ -1,10 +1,10 @@
-#include "partitioniterator.h"
+#include "headers/partitioniterator.h"
 #include <QList>
-#include "partition.h"
-#include "hole.h"
+#include "headers/partition.h"
+#include "headers/hole.h"
 #include <algorithm>
 #include <QSetIterator>
-#include "constraint.h"
+#include "headers/constraint.h"
 
 PartitionIterator::PartitionIterator(
         QList<Partition*>* partitionList,

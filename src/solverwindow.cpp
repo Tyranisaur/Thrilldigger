@@ -1,9 +1,9 @@
-#include "solverwindow.h"
+#include "headers/solverwindow.h"
 #include "ui_solverwindow.h"
-#include "board.h"
-#include "problemparameters.h"
-#include "dugtype.h"
-#include "solver.h"
+#include "headers/board.h"
+#include "headers/problemparameters.h"
+#include "headers/dugtype.h"
+#include "headers/solver.h"
 #include <QVBoxLayout>
 #include <QCOmboBox>
 #include <QMenu>
@@ -37,7 +37,7 @@ SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
     boardWidth = params->width;
     cellGrid = new QVBoxLayout **[boardHeight];
     boardState = new DugType::DugType *[boardHeight];
-    movie = new QMovie("C:\\Users\\Torgeir\\Documents\\GitHub\\Thrilldigger\\ajax-loader.gif");
+    movie = new QMovie(":/resources/ajax-loader.gif");
     ui->animationLabel->setMovie(movie);
     movie->start();
     ui->animationLabel->hide();

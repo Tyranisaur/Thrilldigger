@@ -1,12 +1,12 @@
-#include "solver.h"
-#include "problemparameters.h"
+#include "headers/solver.h"
+#include "headers/problemparameters.h"
 #include <QSet>
 #include <QSetIterator>
-#include "hole.h"
-#include "constraint.h"
-#include "configurationiterator.h"
-#include "partitioniterator.h"
-#include "partition.h"
+#include "headers/hole.h"
+#include "headers/constraint.h"
+#include "headers/configurationiterator.h"
+#include "headers/partitioniterator.h"
+#include "headers/partition.h"
 #include <iostream>
 
 Solver::Solver(ProblemParameters * params)

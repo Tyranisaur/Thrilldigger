@@ -1,5 +1,5 @@
-#include "board.h"
-#include "problemparameters.h"
+#include "headers/board.h"
+#include "headers/problemparameters.h"
 #include <random>
 
 Board::Board(ProblemParameters * params)

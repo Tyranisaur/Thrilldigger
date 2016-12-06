@@ -1,4 +1,4 @@
-#include "configurationiterator.h"
+#include "headers/configurationiterator.h"
 
 ConfigurationIterator::ConfigurationIterator(
         bool ** badSpotArray,
