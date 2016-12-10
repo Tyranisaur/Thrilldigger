@@ -7,6 +7,8 @@ Board::Board(ProblemParameters * params)
     int holes = params->height * params->width;
     height = params->height;
     width = params->width;
+    bombs = params->bombs;
+    rupoors = params->rupoors;
     boardRep = new DugType::DugType*[params->height];
     opened = new bool*[height];
     for(int i = 0; i < params->height; i++)
@@ -118,6 +120,106 @@ Board::~Board()
     delete[] boardRep;
     delete[] opened;
 }
+
+void Board::reload()
+{
+    for(int i = 0; i < height; i++)
+    {
+        for(int j = 0; j < width; j++)
+        {
+            opened[i][j] = false;
+            boardRep[i][j] = DugType::DugType::green;
+        }
+    }
+    int index;
+    std::random_device rd;
+    std::mt19937 eng(rd());
+    std::uniform_int_distribution<> distr(0, width*height - 1);
+    int x, y;
+    for(int b = 0; b < bombs; b++)
+    {
+        index = distr(eng);
+        x = index % width;
+        y = index / width;
+
+        if(boardRep[y][x] == DugType::DugType::bomb)
+        {
+            b--;
+            continue;
+        }
+        boardRep[y][x] = DugType::DugType::bomb;
+
+    }
+    for(int r = 0; r < rupoors; r++)
+    {
+        index = distr(eng);
+        x = index % width;
+        y = index / width;
+
+        if(boardRep[y][x] != DugType::DugType::green)
+        {
+            r--;
+            continue;
+        }
+        boardRep[y][x] = DugType::DugType::rupoor;
+
+    }
+
+
+    int badspots;
+    for(int y = 0; y < height; y++)
+    {
+        for(int x = 0; x < width; x++)
+        {
+            if(boardRep[y][x] == DugType::DugType::green)
+            {
+                badspots = 0;
+                for(int filterY = y - 1; filterY < y + 2; filterY++)
+                {
+                    if(filterY >= 0 && filterY < height)
+                    {
+                        for(int filterX = x - 1; filterX < x + 2; filterX++)
+                        {
+                            if(filterX >= 0 && filterX < width)
+                            {
+                                if(filterX != x || filterY != y)
+                                {
+                                    if(boardRep[filterY][filterX] < 0)
+                                    {
+                                        badspots++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                switch(badspots)
+                {
+                case 0:
+                    boardRep[y][x] = DugType::DugType::green;
+                    break;
+                case 1:
+                case 2:
+                    boardRep[y][x] = DugType::DugType::blue;
+                    break;
+                case 3:
+                case 4:
+                    boardRep[y][x] = DugType::DugType::red;
+                    break;
+                case 5:
+                case 6:
+                    boardRep[y][x] = DugType::DugType::silver;
+                    break;
+                case 7:
+                case 8:
+                    boardRep[y][x] = DugType::DugType::gold;
+                    break;
+                }
+            }
+        }
+    }
+}
+
 
 DugType::DugType Board::getCell(int x, int y)
 {

@@ -2,6 +2,7 @@
 #define SIMULATORWINDOW_H
 
 #include <QMainWindow>
+#include "board.h"
 
 namespace Ui {
 class SimulatorWindow;
@@ -13,7 +14,7 @@ class QPushButton;
 class QCloseEvent;
 
 struct ProblemParameters;
-class Board;
+
 
 class SimulatorWindow : public QMainWindow
 {
@@ -40,7 +41,7 @@ private:
     int boardWidth;
     int boardHeight;
     int rupeeTotal;
-    Board * board;
+    Board board;
 
 };
 

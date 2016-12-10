@@ -7,25 +7,38 @@
 #include <iostream>
 
 Benchmark::Benchmark(ProblemParameters params):
-    params(params)
+    params(params),
+    board (&params),
+    solver(&params)
 {
-    thread = new QThread;
-    moveToThread(thread);
+    moveToThread(&thread);
+    //    solver = new Solver*[2];
 
-    connect(thread,
+    //    for(int i = 0; i < 2; i++)
+    //    {
+    //        solver[i] = new Solver(&params);
+    //    }
+    connect(&thread,
             SIGNAL(started()),
             this,
             SLOT(run()));
+    ridgepoints = new double[4]{0.5, 2.5, 4.5, 6.5};
 }
 
 Benchmark::~Benchmark()
 {
-    delete thread;
+    //    for(int i = 0; i < 2; i++)
+    //    {
+    //        delete solver[i];
+    //    }
+    //    delete[] solver;
+    delete[] ridgepoints;
 }
 
 void Benchmark::start()
 {
-    thread->start();
+    thread.start();
+
 }
 
 void Benchmark::run()
@@ -44,33 +57,71 @@ void Benchmark::run()
     }
     QTime timer;
     timer.start();
-    for(int i = 0; i < 1000; i++)
+    for(int i = 0; i < 100000; i++)
     {
         for(int y = 0; y < params.height; y++)
         {
             std::fill(knownBoard[y], knownBoard[y] + params.width, DugType::DugType::undug);
         }
-        board = new Board(&params);
-        solver = new Solver(&params);
-        probabilityArray = solver->getProbabilityArray();
+        probabilityArray = solver.getProbabilityArray();
 
         singleRun();
+        //        for(int j = 0; j < 2; j++)
+        //        {
+        //            solver[j]->reload();
 
-        delete board;
-        delete solver;
+        //        }
+        solver.reload();
+        board.reload();
+
 
 
     }
-    //    std::cout << totalBadSpots << "\t" << totalProbabilities << std::endl;
-    std::cout << wins / 1000.0 << std::endl;
-    //    for(double key: probabilityCount.keys())
+    //    std::cout << timer.elapsed() << std::endl;
+    //        std::cout << totalBadSpots << "\t" << totalProbabilities << std::endl;
+    std::cout << totalRupees / 100000.0  << std::endl;
+    //        for(double key: probabilityCount.keys())
+    //        {
+    //            std::cout <<
+    //                         key <<
+    //                         "\t" <<
+    //                         probabilityCount.value(key) <<
+    //                         "\t" <<
+    //                         probabilityGoneBad.value(key) <<
+    //                         std::endl;
+    //        }
+
+    double numConstrainedAverage;
+    double numPartitionsAverage;
+    for(int key: clicksEncountered.keys())
+    {
+        numConstrainedAverage = 0.0;
+        numPartitionsAverage = 0.0;
+        for(int i = 0; i < clicksEncountered.value(key); i++)
+        {
+            numConstrainedAverage += constrainedHolesOnClicks.value(key)->at(i);
+            numPartitionsAverage += partitionsOnClicks.value(key)->at(i);
+        }
+        numConstrainedAverage /= clicksEncountered.value(key);
+        numPartitionsAverage /= clicksEncountered.value(key);
+        std::cout <<
+                     key <<
+                     "\t" <<
+                     numConstrainedAverage <<
+                     "\t" <<
+                     numPartitionsAverage <<
+                     std::endl;
+
+    }
+
+    //    for(uint64_t key: iterationsEncountered.keys())
     //    {
     //        std::cout <<
-    //                     key <<
+    //                        key <<
+    //                     "\t"   <<
+    //                     iterationsEncountered.value(key) <<
     //                     "\t" <<
-    //                     probabilityCount.value(key) <<
-    //                     "\t" <<
-    //                     probabilityGoneBad.value(key) <<
+    //                     totalTimeOnIterations.value(key) / iterationsEncountered.value(key) <<
     //                     std::endl;
     //    }
     for(int y = 0; y < params.height; y++)
@@ -79,7 +130,7 @@ void Benchmark::run()
 
     }
     delete[] knownBoard;
-    thread->exit();
+    thread.exit();
     emit done();
 
 }
@@ -90,6 +141,8 @@ void Benchmark::singleRun()
     DugType::DugType newSpot;
     double lowestprobability;
     double highestNeighborSum = 0.0;
+    double ridgedistance;
+    double lowestridgedistance;
     double neighborSum;
     int bestX;
     int bestY;
@@ -97,16 +150,102 @@ void Benchmark::singleRun()
     double sumProbabilities = 0.0;
     int rupees = 0;
     int clicks = 0;
-    int setupTime = 0;
-    int runTime = 0;
-    int individualRunTime;
-    int individualSetupTime;
+    double setupTime = 0;
+    double runTime = 0;
+    double individualRunTime;
+    double individualSetupTime;
+
+    int numConstrainedHoles;
+    int partitions;
+    uint64_t standardIterations;
+    uint64_t partitionIterations;
+    int legalIterations;
+
     timer.start();
-    solver->partitionCalculate();
-    runTime += timer.elapsed();
-    while(!board->hasWon())
+    //    for(int i = 0; i < 1000; i++)
+    //    {
+    //        solver[i]->partitionCalculate();
+    //    }
+
+    //    solver[0]->standardCalculate();
+    //    solver[1]->partitionCalculate();
+
+    solver.partitionCalculate();
+
+    //    runTime += timer.elapsed() /2.0;
+    //    numConstrainedHoles = solver[0]->getConstrainedHoles();
+    //    partitions = solver[1]->getPartitions();
+    //    standardIterations = solver[0]->getIterations();
+    //    partitionIterations = solver[1]->getIterations();
+    //    legalIterations = solver[0]->getLegalIterations();
+
+    //    if(clicksEncountered.contains(clicks))
+    //    {
+    //        clicksEncountered.insert(clicks, clicksEncountered.value(clicks) + 1);
+    //    }
+    //    else
+    //    {
+    //        clicksEncountered.insert(clicks, 1);
+    //    }
+    //    if(standardIterationsEncountered.contains(standardIterations))
+    //    {
+    //        standardIterationsEncountered.insert(standardIterations, standardIterationsEncountered.value(standardIterations) + 1);
+    //        totalTimeOnIterations.insert(standardIterations, totalTimeOnIterations.value(standardIterations) + runTime);
+    //    }
+    //    else
+    //    {
+    //        standardIterationsEncountered.insert(standardIterations, 1);
+    //        totalTimeOnIterations.insert(standardIterations, runTime);
+    //    }
+    //    if(partitionIterationsEncountered.contains(partitionIterations))
+    //    {
+    //        partitionIterationsEncountered.insert(standardIterations, partitionIterationsEncountered.value(partitionIterations) + 1);
+    //        totalTimeOnIterations.insert(standardIterations, totalTimeOnIterations.value(standardIterations) + runTime);
+    //    }
+    //    else
+    //    {
+    //        partitionIterationsEncountered.insert(partitionIterations, 1);
+    //        totalTimeOnIterations.insert(standardIterations, runTime);
+    //    }
+
+    //    if(constrainedHolesEncountered.contains(numConstrainedHoles))
+    //    {
+    //        constrainedHolesEncountered.insert(numConstrainedHoles, constrainedHolesEncountered.value(numConstrainedHoles) + 1);
+    //        constrainedHolesTotalTime.insert(numConstrainedHoles, constrainedHolesTotalTime.value(numConstrainedHoles) + runTime);
+    //    }
+    //    else
+    //    {
+    //        constrainedHolesEncountered.insert(numConstrainedHoles, 1);
+    //        constrainedHolesTotalTime.insert(numConstrainedHoles, runTime);
+    //    }
+    //    if(partitionsEncountered.contains(partitions))
+    //    {
+    //        partitionsEncountered.insert(partitions, partitionsEncountered.value(partitions) + 1);
+    //        totalTimeOnPartitions.insert(partitions, totalTimeOnPartitions.value(partitions) + runTime);
+    //    }
+    //    else
+    //    {
+    //        partitionsEncountered.insert(partitions, partitionsEncountered.value(partitions) + 1);
+    //        totalTimeOnPartitions.insert(partitions, totalTimeOnPartitions.value(partitions) + runTime);
+    //    }
+    //    if(constrainedHolesOnClicks.contains(clicks))
+    //    {
+    //        constrainedHolesOnClicks.value(clicks)->append(numConstrainedHoles);
+    //        partitionsOnClicks.value(clicks)->append(partitions);
+    //    }
+    //    else
+    //    {
+    //        constrainedHolesOnClicks.insert(clicks,new QList<int>);
+    //        partitionsOnClicks.insert(clicks, new QList<int>);
+    //        constrainedHolesOnClicks.value(clicks)->append(numConstrainedHoles);
+    //        partitionsOnClicks.value(clicks)->append(partitions);
+
+    //    }
+
+    while(!board.hasWon())
     {
         lowestprobability = 1.0;
+        lowestridgedistance = 1.0;
         for(int y = 0; y < params.height; y++)
         {
             for(int x = 0; x < params.width; x++)
@@ -136,6 +275,15 @@ void Benchmark::singleRun()
                         lowestprobability = probabilityArray[y][x];
                         bestX = x;
                         bestY = y;
+
+                        lowestridgedistance = 1.0;
+                        for(int i = 0; i < 4; i++)
+                        {
+                            if(std::abs(neighborSum - ridgepoints[i]) < lowestridgedistance)
+                            {
+                                lowestridgedistance = std::abs(neighborSum - ridgepoints[i]);
+                            }
+                        }
                     }
                     else if(probabilityArray[y][x] == lowestprobability)
                     {
@@ -156,25 +304,40 @@ void Benchmark::singleRun()
                                 }
                             }
                         }
-                        if(neighborSum > highestNeighborSum)
+
+                        ridgedistance = 1.0;
+                        for(int i = 0; i < 4; i++)
+                        {
+                            if(std::abs(neighborSum - ridgepoints[i]) < ridgedistance)
+                            {
+                                ridgedistance = std::abs(neighborSum - ridgepoints[i]);
+                            }
+                        }
+                        if(ridgedistance < lowestridgedistance)
                         {
                             bestX = x;
                             bestY = y;
-                            highestNeighborSum = neighborSum;
+                            lowestridgedistance = ridgedistance;
                         }
+                        //                        if(neighborSum > highestNeighborSum)
+                        //                        {
+                        //                            bestX = x;
+                        //                            bestY = y;
+                        //                            highestNeighborSum = neighborSum;
+                        //                        }
                     }
                 }
             }
         }
-        clicks++;
         sumProbabilities += lowestprobability;
-        if(!probabilityCount.contains(lowestprobability))
-        {
-            probabilityCount.insert(lowestprobability, 0);
-            probabilityGoneBad.insert(lowestprobability, 0);
-        }
+        //        if(!probabilityCount.contains(lowestprobability))
+        //        {
+        //            probabilityCount.insert(lowestprobability, 0);
+        //            probabilityGoneBad.insert(lowestprobability, 0);
+        //        }
         probabilityCount.insert(lowestprobability, probabilityCount.value(lowestprobability) + 1);
-        newSpot = board->getCell(bestX, bestY);
+        newSpot = board.getCell(bestX, bestY);
+        clicks++;
         knownBoard[bestY][bestX] = newSpot;
         if(newSpot == DugType::DugType::bomb)
         {
@@ -210,15 +373,88 @@ void Benchmark::singleRun()
             rupees += 300;
         }
         timer.restart();
-        solver->setCell(bestX, bestY, newSpot);
-        individualSetupTime = timer.elapsed();
-        setupTime += individualSetupTime;
-        timer.restart();
-        solver->partitionCalculate();
-        individualRunTime = timer.elapsed();
-        runTime += individualRunTime;
+
+        //        for(int i = 0; i < 2; i++)
+        //        {
+        //            solver[i]->setCell(bestX, bestY, newSpot);
+        //        }
+        solver.setCell(bestX, bestY, newSpot);
+        //        individualSetupTime = timer.elapsed() / 2.0;
+        //        setupTime += individualSetupTime;
+        //        timer.restart();
+        //        for(int i = 0; i < 1000; i++)
+        //        {
+        //            solver[i]->partitionCalculate();
+        //        }
+        //        solver[0]->standardCalculate();
+        //        solver[1]->partitionCalculate();
+        //        individualRunTime = timer.elapsed() / 2.0;
+        //        runTime += individualRunTime;
+
+        //        numConstrainedHoles = solver[0]->getConstrainedHoles();
+        //        partitions = solver[1]->getPartitions();
+        //        standardIterations = solver[0]->getIterations();
+        //        partitionIterations = solver[1]->getIterations();
+
+        //std::cout << clicks << "\t " << numConstrainedHoles  << "\t" << partitions << std::endl;
+
+        //        legalIterations = solver[0]->getLegalIterations();
+
+        //        if(clicksEncountered.contains(clicks))
+        //        {
+        //            clicksEncountered.insert(clicks, clicksEncountered.value(clicks) + 1);
+        //            totalSetupTimeForClicks.insert(clicks, totalSetupTimeForClicks.value(clicks) + individualSetupTime);
+        //        }
+        //        else
+        //        {
+        //            clicksEncountered.insert(clicks, 1);
+        //            totalSetupTimeForClicks.insert(clicks, individualSetupTime);
+        //        }
+        //        if(standardIterationsEncountered.contains(standardIterations))
+        //        {
+        //            standardIterationsEncountered.insert(standardIterations, standardIterationsEncountered.value(standardIterations) + 1);
+        //            totalTimeOnIterations.insert(standardIterations, totalTimeOnIterations.value(standardIterations) + individualRunTime);
+        //        }
+        //        else
+        //        {
+        //            standardIterationsEncountered.insert(standardIterations, 1);
+        //            totalTimeOnIterations.insert(standardIterations, individualRunTime);
+        //        }
+
+        //        if(constrainedHolesEncountered.contains(numConstrainedHoles))
+        //        {
+        //            constrainedHolesEncountered.insert(numConstrainedHoles, constrainedHolesEncountered.value(numConstrainedHoles) + 1);
+        //            constrainedHolesTotalTime.insert(numConstrainedHoles, constrainedHolesTotalTime.value(numConstrainedHoles) + individualRunTime);
+        //        }
+        //        else
+        //        {
+        //            constrainedHolesEncountered.insert(numConstrainedHoles, 1);
+        //            constrainedHolesTotalTime.insert(numConstrainedHoles, individualRunTime);
+        //        }
+        //        if(partitionsEncountered.contains(partitions))
+        //        {
+        //            partitionsEncountered.insert(partitions, partitionsEncountered.value(partitions) + 1);
+        //            totalTimeOnPartitions.insert(partitions, totalTimeOnPartitions.value(partitions) + individualRunTime);
+        //        }
+        //        else
+        //        {
+        //            partitionsEncountered.insert(partitions, 1);
+        //            totalTimeOnPartitions.insert(partitions, individualRunTime);
+        //        }
+        //        if(constrainedHolesOnClicks.contains(clicks))
+        //        {
+        //            constrainedHolesOnClicks.value(clicks)->append(numConstrainedHoles);
+        //            partitionsOnClicks.value(clicks)->append(partitions);
+        //        }
+        //        else
+        //        {
+        //            constrainedHolesOnClicks.insert(clicks,new QList<int>);
+        //            partitionsOnClicks.insert(clicks, new QList<int>);
+        //            constrainedHolesOnClicks.value(clicks)->append(numConstrainedHoles);
+        //            partitionsOnClicks.value(clicks)->append(partitions);
+        //        }
     }
-    if(board->hasWon())
+    if(board.hasWon())
     {
         wins++;
     }
@@ -229,7 +465,7 @@ void Benchmark::singleRun()
     totalRunTime += runTime;
     totalSetupTime += setupTime;
 
-    //    std::cout << sumbadspots << "\t" << sumProbabilities << std::endl;
+    //std::cout << sumbadspots << "\t" << sumProbabilities << std::endl;
     //    std::cout << clicks << "\t" << runTime << std::endl;
 }
 

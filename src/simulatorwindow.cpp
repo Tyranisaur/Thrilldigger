@@ -8,7 +8,8 @@
 
 SimulatorWindow::SimulatorWindow(ProblemParameters * params, QWidget *parent ) :
     QMainWindow(parent),
-    ui(new Ui::SimulatorWindow)
+    ui(new Ui::SimulatorWindow),
+    board(params)
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -17,7 +18,6 @@ SimulatorWindow::SimulatorWindow(ProblemParameters * params, QWidget *parent ) :
     boardHeight = params->height;
     boardWidth = params->width;
     rupeeTotal = 0;
-    board = new Board(params);
     for(int y = 0; y < params->height; y++)
     {
         cellGrid[y] = new QPushButton*[params->width];
@@ -41,7 +41,6 @@ SimulatorWindow::SimulatorWindow(ProblemParameters * params, QWidget *parent ) :
 SimulatorWindow::~SimulatorWindow()
 {
     delete ui;
-    delete board;
     for(int y = 0; y < boardHeight; y++)
     {
         for(int x = 0; x < boardWidth; x++)
@@ -57,7 +56,7 @@ SimulatorWindow::~SimulatorWindow()
 void SimulatorWindow::cellOpened(int x, int y)
 {
     QPushButton * button = cellGrid[y][x];
-    DugType::DugType value = board->getCell(x, y);
+    DugType::DugType value = board.getCell(x, y);
     switch(value)
     {
     case DugType::DugType::bomb:
@@ -95,7 +94,7 @@ void SimulatorWindow::cellOpened(int x, int y)
         rupeeTotal += 300;
         break;
     }
-    if(board->hasWon()){
+    if(board.hasWon()){
         for(int y = 0; y < boardHeight; y++)
         {
             for(int x = 0; x < boardWidth; x++)

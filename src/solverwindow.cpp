@@ -14,7 +14,8 @@
 
 SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::SolverWindow)
+    ui(new Ui::SolverWindow),
+    solver(params)
 {
     thread = new QThread();
     ui->setupUi(this);
@@ -22,14 +23,13 @@ SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
     QVBoxLayout * vLayout;
     QPushButton * button;
     QComboBox * menuButton;
-    solver = new Solver(params);
-    probabilityArray = solver->getProbabilityArray();
-    solver->moveToThread(thread);
+    probabilityArray = solver.getProbabilityArray();
+    solver.moveToThread(thread);
     connect(thread,
             SIGNAL(started()),
-            solver,
+            &solver,
             SLOT(partitionCalculate()));
-    connect(solver,
+    connect(&solver,
             SIGNAL(done()),
             this,
             SLOT(processCalculation()));
@@ -103,7 +103,6 @@ SolverWindow::~SolverWindow()
     delete ui;
     delete[] cellGrid;
     delete[] boardState;
-    delete solver;
     delete movie;
 }
 
@@ -200,7 +199,7 @@ void SolverWindow::cellSet(int x, int y)
         button->setStyleSheet("background: gold");
         boardState[y][x] = DugType::DugType::gold;
     }
-    solver->setCell(x, y, boardState[y][x]);
+    solver.setCell(x, y, boardState[y][x]);
 
 
 }

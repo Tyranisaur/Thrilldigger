@@ -2,6 +2,7 @@
 #define SOLVERWINDOW_H
 
 #include <QMainWindow>
+#include "solver.h"
 
 namespace Ui {
     class SolverWindow;
@@ -12,7 +13,6 @@ namespace DugType {
 }
 
 class QVBoxLayout;
-class Solver;
 class QThread;
 class QCloseEvent;
 class QMovie;
@@ -43,7 +43,7 @@ private:
     QVBoxLayout *** cellGrid;
     QMovie * movie;
     DugType::DugType ** boardState;
-    Solver * solver;
+    Solver solver;
     QThread * thread;
     double ** probabilityArray;
     int boardWidth;

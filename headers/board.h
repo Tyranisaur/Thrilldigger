@@ -17,9 +17,13 @@ public:
     DugType::DugType getCell(int x, int y);
     bool hasWon();
 
+    void reload();
+
 private:
     int height;
     int width;
+    int bombs;
+    int rupoors;
     bool ** opened;
     DugType::DugType ** boardRep;
 };
