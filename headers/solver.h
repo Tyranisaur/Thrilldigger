@@ -18,7 +18,7 @@ public:
     ~Solver();
 
     void setCell(int x, int y, DugType::DugType type);
-    double ** getProbabilityArray();
+    double * getProbabilityArray();
     void reload();
 
     double getTotalNumConfigurations();
@@ -37,18 +37,18 @@ public slots:
 
 
 private:
-    double ** probabilities;
+    double * probabilities;
     QList<Constraint*> constraintList;
-    Constraint ** constraints;
+    Constraint * constraints;
 
     Partition * partitions;
-    bool ** badSpots;
-    Hole ** holes;
-    QSet<Constraint*> ** imposingConstraints;
-    QSet<Hole*>  constrainedUnopenedHoles;
-    QSet<Hole*>  unconstrainedUnopenedHoles;
-    QSet<Hole*>  knownSafeSpots;
-    QSet<Hole*>  knownBadSpots;
+    bool * badSpots;
+
+    QSet<Constraint*> * imposingConstraints;
+    QSet<int>  constrainedUnopenedHoles;
+    QSet<int>  unconstrainedUnopenedHoles;
+    QSet<int>  knownSafeSpots;
+    QSet<int>  knownBadSpots;
     QList<Partition*> partitionList;
     QList<Partition*> sunkenPartitions;
 
@@ -56,9 +56,10 @@ private:
     int bombsAmongConstrainedHoles;
     int boardHeight;
     int boardWidth;
+    int numHoles;
     int bombs;
     int rupoors;
-    DugType::DugType ** board;
+    DugType::DugType * board;
     double totalWeight;
     int legalIterations;
     uint64_t totalIterations;
@@ -66,8 +67,8 @@ private:
 
 
     bool validateBoard();
-    void setKnownSafeSpot(int x, int y);
-    void setKnownBadSpot(int x, int y);
+    void setKnownSafeSpot(int index);
+    void setKnownBadSpot(int index);
     void resetBoard();
     void generatePartitions();
     double choose(unsigned long long n, unsigned long long k);

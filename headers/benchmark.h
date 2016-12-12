@@ -58,7 +58,7 @@ private:
     uint64_t totalRupees;
     int totalClicks;
     QThread thread;
-    double ** probabilityArray;
+    double * probabilityArray;
     ProblemParameters params;
     Board board;
     Solver solver;

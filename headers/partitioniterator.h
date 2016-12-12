@@ -9,7 +9,7 @@ class PartitionIterator
 public:
     PartitionIterator(
             QList<Partition*>* partitionList,
-            bool ** badspots,
+            bool * badspots,
             QList<Partition*>* sunkenPartitions,
             int numBadSpots);
 
@@ -27,7 +27,7 @@ private:
     bool started;
     QList<int> maxAmountsPerPartition;
     QList<int> minAmountsPerPartition;
-    bool ** badSpots;
+    bool * badSpots;
 };
 
 #endif // PARTITIONITERATOR_H

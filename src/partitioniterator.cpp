@@ -1,14 +1,13 @@
 #include "headers/partitioniterator.h"
 #include <QList>
 #include "headers/partition.h"
-#include "headers/hole.h"
 #include <algorithm>
 #include <QSetIterator>
 #include "headers/constraint.h"
 
 PartitionIterator::PartitionIterator(
         QList<Partition*>* partitionList,
-        bool ** badSpots,
+        bool * badSpots,
         QList<Partition*>* sunkenPartitions,
         int numBadSpots)
 {
@@ -18,7 +17,7 @@ PartitionIterator::PartitionIterator(
     QSetIterator<Constraint*> * it;
     Constraint * constraint;
     Partition * partition;
-    Hole * hole;
+    int hole;
     int sunkenBadness = 0;
     int maxAmount;
     int minAmount;
@@ -48,11 +47,11 @@ PartitionIterator::PartitionIterator(
         delete it;
         for(int j = 0; j < minAmount; j++)
         {
-            badSpots[partition->holes.at(j)->y][partition->holes.at(j)->x] = true;
+            badSpots[partition->holes.at(j)] = true;
         }
         for(int j = minAmount; j < partition->holes.size(); j++)
         {
-            badSpots[partition->holes.at(j)->y][partition->holes.at(j)->x] = false;
+            badSpots[partition->holes.at(j)] = false;
         }
         sumMin += minAmount;
         sumMax+= maxAmount;
@@ -81,11 +80,11 @@ PartitionIterator::PartitionIterator(
         partition->badness = minAmount;
         for(int j = 0; j < minAmount; j++)
         {
-            badSpots[partition->holes.at(j)->y][partition->holes.at(j)->x] = true;
+            badSpots[partition->holes.at(j)] = true;
         }
         for(int j = minAmount; j < partition->holes.size(); j++)
         {
-            badSpots[partition->holes.at(j)->y][partition->holes.at(j)->x] = false;
+            badSpots[partition->holes.at(j)] = false;
         }
         if(maxAmount == minAmount)
         {
@@ -114,7 +113,7 @@ PartitionIterator::PartitionIterator(
             indexArray[k] = index;
             weight /= choose(partition->holes.size(), partition->badness);
             hole = partition->holes.at(partition->badness);
-            badSpots[hole->y][hole->x] = true;
+            badSpots[hole] = true;
             partition->badness++;
             weight *= choose(partition->holes.size(), partition->badness);
             k++;
@@ -138,7 +137,7 @@ bool PartitionIterator::hasNext()
     Partition * partition;
     Partition * givingPartition;
     Partition * receivingPartition;
-    Hole * hole;
+    int hole;
     int badnessAccumulator = 0;
     int givingIndex;
     int receivingIndex;
@@ -156,13 +155,13 @@ bool PartitionIterator::hasNext()
             givingPartition->badness--;
             weight *= choose(givingPartition->holes.size(), givingPartition->badness);
             hole = givingPartition->holes.at(givingPartition->badness);
-            badSpots[hole->y][hole->x] = false;
+            badSpots[hole] = false;
 
             receivingIndex = indexArray[givingIndex] + 1;
 
             receivingPartition = partitionList->at(receivingIndex);
             hole = receivingPartition->holes.at(receivingPartition->badness);
-            badSpots[hole->y][hole->x] = true;
+            badSpots[hole] = true;
             weight /= choose(receivingPartition->holes.size(), receivingPartition->badness);
             receivingPartition->badness++;
             weight *= choose(receivingPartition->holes.size(), receivingPartition->badness);
@@ -188,11 +187,11 @@ bool PartitionIterator::hasNext()
                     givingPartition->badness--;
                     weight *= choose(givingPartition->holes.size(), givingPartition->badness);
                     hole = givingPartition->holes.at(givingPartition->badness);
-                    badSpots[hole->y][hole->x] = false;
+                    badSpots[hole] = false;
 
 
                     hole = receivingPartition->holes.at(receivingPartition->badness);
-                    badSpots[hole->y][hole->x] = true;
+                    badSpots[hole] = true;
                     weight /= choose(receivingPartition->holes.size(), receivingPartition->badness);
                     receivingPartition->badness++;
                     weight *= choose(receivingPartition->holes.size(), receivingPartition->badness);

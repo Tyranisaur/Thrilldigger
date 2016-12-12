@@ -32,7 +32,6 @@ HEADERS  += \
     headers/solver.h \
     headers/dugtype.h \
     headers/problemparameters.h \
-    headers/hole.h \
     headers/configurationiterator.h \
     headers/constraint.h \
     headers/partition.h \

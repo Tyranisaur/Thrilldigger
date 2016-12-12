@@ -139,6 +139,8 @@ void Benchmark::singleRun()
 {
     QTime timer;
     DugType::DugType newSpot;
+    int index;
+    int filterIndex;
     double lowestprobability;
     double highestNeighborSum = 0.0;
     double ridgedistance;
@@ -242,17 +244,19 @@ void Benchmark::singleRun()
 
     //    }
 
+
     while(!board.hasWon())
     {
         lowestprobability = 1.0;
         lowestridgedistance = 1.0;
+        index = 0;
         for(int y = 0; y < params.height; y++)
         {
             for(int x = 0; x < params.width; x++)
             {
                 if(knownBoard[y][x] == DugType::DugType::undug)
                 {
-                    if(probabilityArray[y][x] < lowestprobability)
+                    if(probabilityArray[index] < lowestprobability)
                     {
                         neighborSum = 0.0;
                         for(int filterY = y - 1; filterY < y + 2; filterY++)
@@ -265,14 +269,15 @@ void Benchmark::singleRun()
                                     {
                                         if(filterX != x || filterY != y)
                                         {
-                                            neighborSum += probabilityArray[filterY][filterX];
+                                            filterIndex = filterY * params.width + filterX;
+                                            neighborSum += probabilityArray[filterIndex];
                                         }
                                     }
                                 }
                             }
                         }
                         highestNeighborSum = neighborSum;
-                        lowestprobability = probabilityArray[y][x];
+                        lowestprobability = probabilityArray[index];
                         bestX = x;
                         bestY = y;
 
@@ -285,7 +290,7 @@ void Benchmark::singleRun()
 //                            }
 //                        }
                     }
-                    else if(probabilityArray[y][x] == lowestprobability)
+                    else if(probabilityArray[index] == lowestprobability)
                     {
                         neighborSum = 0.0;
                         for(int filterY = y - 1; filterY < y + 2; filterY++)
@@ -298,7 +303,8 @@ void Benchmark::singleRun()
                                     {
                                         if(filterX != x || filterY != y)
                                         {
-                                            neighborSum += probabilityArray[filterY][filterX];
+                                            filterIndex = filterY * params.width + filterX;
+                                            neighborSum += probabilityArray[filterIndex];
                                         }
                                     }
                                 }
@@ -327,6 +333,7 @@ void Benchmark::singleRun()
                                                 }
                     }
                 }
+                index++;
             }
         }
         sumProbabilities += lowestprobability;

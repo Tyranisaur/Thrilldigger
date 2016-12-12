@@ -8,7 +8,7 @@ struct Hole;
 
 struct Partition{
     QSet<Constraint*> * constraints;
-    QList<Hole*> holes;
+    QList<int> holes;
     char badness;
 
     bool operator==(Partition & other)

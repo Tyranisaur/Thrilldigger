@@ -9,7 +9,7 @@ struct Constraint{
     unsigned char x;
     unsigned char y;
     int maxBadness;
-    QList<Hole*> holes;
+    QList<int> holes;
 };
 
 #endif // CONSTRAINT_H

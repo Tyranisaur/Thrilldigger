@@ -45,9 +45,10 @@ private:
     DugType::DugType ** boardState;
     Solver solver;
     QThread * thread;
-    double ** probabilityArray;
+    double * probabilityArray;
     int boardWidth;
     int boardHeight;
+    int numHoles;
 
 };
 

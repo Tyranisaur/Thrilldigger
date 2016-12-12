@@ -35,6 +35,7 @@ SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
             SLOT(processCalculation()));
     boardHeight = params->height;
     boardWidth = params->width;
+    numHoles = boardHeight * boardWidth;
     cellGrid = new QVBoxLayout **[boardHeight];
     boardState = new DugType::DugType *[boardHeight];
     movie = new QMovie(":/resources/ajax-loader.gif");
@@ -119,6 +120,7 @@ void SolverWindow::processCalculation()
     thread->exit();
     QPushButton * button;
     double lowest = 1.0;
+    int index = 0;
     for(int y = 0; y < boardHeight; y++)
     {
         for(int x = 0; x < boardWidth; x++)
@@ -126,24 +128,27 @@ void SolverWindow::processCalculation()
             if(boardState[y][x] == DugType::DugType::undug)
             {
                 button = (QPushButton *)cellGrid[y][x]->itemAt(0)->widget();
-                button->setText(QString::number( probabilityArray[y][x] * 100, 'f', 2) + "% Bad");
-                lowest = std::min(lowest, probabilityArray[y][x]);
+                button->setText(QString::number( probabilityArray[index] * 100, 'f', 2) + "% Bad");
+                lowest = std::min(lowest, probabilityArray[index]);
                 button->setStyleSheet("background: none");
             }
+            index++;
         }
     }
+    index = 0;
     for(int y = 0; y < boardHeight; y++)
     {
         for(int x = 0; x < boardWidth; x++)
         {
             if(boardState[y][x] == DugType::DugType::undug)
             {
-                if(probabilityArray[y][x] == lowest)
+                if(probabilityArray[index] == lowest)
                 {
                     button = (QPushButton *)cellGrid[y][x]->itemAt(0)->widget();
                     button->setStyleSheet("background: cyan");
                 }
             }
+            index++;
         }
     }
 
