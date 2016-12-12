@@ -40,6 +40,8 @@ private:
     double ** probabilities;
     QList<Constraint*> constraintList;
     Constraint ** constraints;
+
+    Partition * partitions;
     bool ** badSpots;
     Hole ** holes;
     QSet<Constraint*> ** imposingConstraints;

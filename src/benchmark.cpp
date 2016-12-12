@@ -57,7 +57,7 @@ void Benchmark::run()
     }
     QTime timer;
     timer.start();
-    for(int i = 0; i < 100000; i++)
+    for(int i = 0; i < 1000; i++)
     {
         for(int y = 0; y < params.height; y++)
         {
@@ -77,9 +77,9 @@ void Benchmark::run()
 
 
     }
-    //    std::cout << timer.elapsed() << std::endl;
+        std::cout << timer.elapsed() << std::endl;
     //        std::cout << totalBadSpots << "\t" << totalProbabilities << std::endl;
-    std::cout << totalRupees / 100000.0  << std::endl;
+//    std::cout << wins / 100000.0  << std::endl;
     //        for(double key: probabilityCount.keys())
     //        {
     //            std::cout <<
@@ -91,28 +91,28 @@ void Benchmark::run()
     //                         std::endl;
     //        }
 
-    double numConstrainedAverage;
-    double numPartitionsAverage;
-    for(int key: clicksEncountered.keys())
-    {
-        numConstrainedAverage = 0.0;
-        numPartitionsAverage = 0.0;
-        for(int i = 0; i < clicksEncountered.value(key); i++)
-        {
-            numConstrainedAverage += constrainedHolesOnClicks.value(key)->at(i);
-            numPartitionsAverage += partitionsOnClicks.value(key)->at(i);
-        }
-        numConstrainedAverage /= clicksEncountered.value(key);
-        numPartitionsAverage /= clicksEncountered.value(key);
-        std::cout <<
-                     key <<
-                     "\t" <<
-                     numConstrainedAverage <<
-                     "\t" <<
-                     numPartitionsAverage <<
-                     std::endl;
+//    double numConstrainedAverage;
+//    double numPartitionsAverage;
+//    for(int key: clicksEncountered.keys())
+//    {
+//        numConstrainedAverage = 0.0;
+//        numPartitionsAverage = 0.0;
+//        for(int i = 0; i < clicksEncountered.value(key); i++)
+//        {
+//            numConstrainedAverage += constrainedHolesOnClicks.value(key)->at(i);
+//            numPartitionsAverage += partitionsOnClicks.value(key)->at(i);
+//        }
+//        numConstrainedAverage /= clicksEncountered.value(key);
+//        numPartitionsAverage /= clicksEncountered.value(key);
+//        std::cout <<
+//                     key <<
+//                     "\t" <<
+//                     numConstrainedAverage <<
+//                     "\t" <<
+//                     numPartitionsAverage <<
+//                     std::endl;
 
-    }
+//    }
 
     //    for(uint64_t key: iterationsEncountered.keys())
     //    {
@@ -276,14 +276,14 @@ void Benchmark::singleRun()
                         bestX = x;
                         bestY = y;
 
-                        lowestridgedistance = 1.0;
-                        for(int i = 0; i < 4; i++)
-                        {
-                            if(std::abs(neighborSum - ridgepoints[i]) < lowestridgedistance)
-                            {
-                                lowestridgedistance = std::abs(neighborSum - ridgepoints[i]);
-                            }
-                        }
+//                        lowestridgedistance = 1.0;
+//                        for(int i = 0; i < 4; i++)
+//                        {
+//                            if(std::abs(neighborSum - ridgepoints[i]) < lowestridgedistance)
+//                            {
+//                                lowestridgedistance = std::abs(neighborSum - ridgepoints[i]);
+//                            }
+//                        }
                     }
                     else if(probabilityArray[y][x] == lowestprobability)
                     {
@@ -305,26 +305,26 @@ void Benchmark::singleRun()
                             }
                         }
 
-                        ridgedistance = 1.0;
-                        for(int i = 0; i < 4; i++)
-                        {
-                            if(std::abs(neighborSum - ridgepoints[i]) < ridgedistance)
-                            {
-                                ridgedistance = std::abs(neighborSum - ridgepoints[i]);
-                            }
-                        }
-                        if(ridgedistance < lowestridgedistance)
-                        {
-                            bestX = x;
-                            bestY = y;
-                            lowestridgedistance = ridgedistance;
-                        }
-                        //                        if(neighborSum > highestNeighborSum)
-                        //                        {
-                        //                            bestX = x;
-                        //                            bestY = y;
-                        //                            highestNeighborSum = neighborSum;
-                        //                        }
+//                        ridgedistance = 1.0;
+//                        for(int i = 0; i < 4; i++)
+//                        {
+//                            if(std::abs(neighborSum - ridgepoints[i]) < ridgedistance)
+//                            {
+//                                ridgedistance = std::abs(neighborSum - ridgepoints[i]);
+//                            }
+//                        }
+//                        if(ridgedistance < lowestridgedistance)
+//                        {
+//                            bestX = x;
+//                            bestY = y;
+//                            lowestridgedistance = ridgedistance;
+//                        }
+                                                if(neighborSum > highestNeighborSum)
+                                                {
+                                                    bestX = x;
+                                                    bestY = y;
+                                                    highestNeighborSum = neighborSum;
+                                                }
                     }
                 }
             }
@@ -386,6 +386,7 @@ void Benchmark::singleRun()
         //        {
         //            solver[i]->partitionCalculate();
         //        }
+        solver.partitionCalculate();
         //        solver[0]->standardCalculate();
         //        solver[1]->partitionCalculate();
         //        individualRunTime = timer.elapsed() / 2.0;

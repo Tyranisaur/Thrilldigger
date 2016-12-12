@@ -20,6 +20,7 @@ Solver::Solver(ProblemParameters * params)
     badSpots = new bool*[boardHeight];
     constraints = new Constraint*[boardHeight];
     imposingConstraints = new QSet<Constraint*>*[boardHeight];
+    partitions = new Partition[boardHeight*boardWidth];
 
     probabilities = new double*[boardHeight];
     for(uint8_t y = 0; y < boardHeight; y++)
@@ -45,9 +46,6 @@ Solver::Solver(ProblemParameters * params)
 
 Solver::~Solver()
 {
-
-    qDeleteAll(partitionList);
-    qDeleteAll(sunkenPartitions);
     for(int y = 0; y < boardHeight; y++)
     {
 
@@ -63,6 +61,7 @@ Solver::~Solver()
     delete[] board;
     delete[] badSpots;
     delete[] holes;
+    delete[] partitions;
 
 }
 
@@ -549,26 +548,26 @@ void Solver::setKnownSafeSpot(int x, int y)
 
 void Solver::generatePartitions()
 {
-    qDeleteAll(partitionList);
-    qDeleteAll(sunkenPartitions);
+
     sunkenPartitions.clear();
     partitionList.clear();
     QSetIterator<Hole*> iter(constrainedUnopenedHoles);
     Hole* constrainedHole;
     Partition * partition;
     bool present;
+    int numpartitions = 0;
     while(iter.hasNext())
     {
         constrainedHole = iter.next();
-        partition = new Partition;
+        partition = &partitions[numpartitions];
         partition->constraints = &imposingConstraints[constrainedHole->y][constrainedHole->x];
+        partition->holes.clear();
         present = false;
         for(int i = 0; i < partitionList.size(); i++)
         {
             if(*(partitionList.at(i)) == *partition)
             {
 
-                delete partition;
                 partition = partitionList.at(i);
                 present = true;
                 break;
@@ -579,13 +578,14 @@ void Solver::generatePartitions()
         if(!present)
         {
             partitionList.append(partition);
+            numpartitions++;
         }
     }
     if(unconstrainedUnopenedHoles.size() > 0)
     {
-        partition = new Partition;
+        partition = &partitions[numpartitions];
         partition->constraints = &emptySet;
-        partition->holes << unconstrainedUnopenedHoles.toList();
+        partition->holes = unconstrainedUnopenedHoles.toList();
         partitionList.prepend(partition);
     }
 }
