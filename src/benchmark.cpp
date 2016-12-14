@@ -12,9 +12,9 @@ Benchmark::Benchmark(ProblemParameters params):
     solver(&params)
 {
     moveToThread(&thread);
-    //    solver = new Solver*[2];
+    //    solver = new Solver*[100];
 
-    //    for(int i = 0; i < 2; i++)
+    //    for(int i = 0; i < 100; i++)
     //    {
     //        solver[i] = new Solver(&params);
     //    }
@@ -51,6 +51,7 @@ void Benchmark::run()
     totalSetupTime = 0;
     totalRunTime = 0;
     knownBoard = new DugType::DugType*[params.height];
+    probabilityArray = solver.getProbabilityArray();
     for(int y = 0; y < params.height; y++)
     {
         knownBoard[y] = new DugType::DugType[params.width];
@@ -63,10 +64,9 @@ void Benchmark::run()
         {
             std::fill(knownBoard[y], knownBoard[y] + params.width, DugType::DugType::undug);
         }
-        probabilityArray = solver.getProbabilityArray();
 
         singleRun();
-        //        for(int j = 0; j < 2; j++)
+        //        for(int j = 0; j < 100; j++)
         //        {
         //            solver[j]->reload();
 
@@ -77,9 +77,9 @@ void Benchmark::run()
 
 
     }
-        std::cout << timer.elapsed() << std::endl;
+//    std::cout << timer.elapsed() << std::endl;
     //        std::cout << totalBadSpots << "\t" << totalProbabilities << std::endl;
-//    std::cout << wins / 100000.0  << std::endl;
+    //    std::cout << wins / 100000.0  << std::endl;
     //        for(double key: probabilityCount.keys())
     //        {
     //            std::cout <<
@@ -91,37 +91,37 @@ void Benchmark::run()
     //                         std::endl;
     //        }
 
-//    double numConstrainedAverage;
-//    double numPartitionsAverage;
-//    for(int key: clicksEncountered.keys())
-//    {
-//        numConstrainedAverage = 0.0;
-//        numPartitionsAverage = 0.0;
-//        for(int i = 0; i < clicksEncountered.value(key); i++)
-//        {
-//            numConstrainedAverage += constrainedHolesOnClicks.value(key)->at(i);
-//            numPartitionsAverage += partitionsOnClicks.value(key)->at(i);
-//        }
-//        numConstrainedAverage /= clicksEncountered.value(key);
-//        numPartitionsAverage /= clicksEncountered.value(key);
-//        std::cout <<
-//                     key <<
-//                     "\t" <<
-//                     numConstrainedAverage <<
-//                     "\t" <<
-//                     numPartitionsAverage <<
-//                     std::endl;
+        double numConstrainedAverage;
+        double numPartitionsAverage;
+        for(int key: clicksEncountered.keys())
+        {
+            numConstrainedAverage = 0.0;
+            numPartitionsAverage = 0.0;
+            for(int i = 0; i < clicksEncountered.value(key); i++)
+            {
+                numConstrainedAverage += constrainedHolesOnClicks.value(key)->at(i);
+                numPartitionsAverage += partitionsOnClicks.value(key)->at(i);
+            }
+            numConstrainedAverage /= clicksEncountered.value(key);
+            numPartitionsAverage /= clicksEncountered.value(key);
+            std::cout <<
+                         key <<
+                         "\t" <<
+                         numConstrainedAverage <<
+                         "\t" <<
+                         numPartitionsAverage <<
+                         std::endl;
 
-//    }
+        }
 
-    //    for(uint64_t key: iterationsEncountered.keys())
+    //    for(uint64_t key: partitionIterationsEncountered.keys())
     //    {
     //        std::cout <<
-    //                        key <<
+    //                     key <<
     //                     "\t"   <<
-    //                     iterationsEncountered.value(key) <<
+    //                     partitionIterationsEncountered.value(key) <<
     //                     "\t" <<
-    //                     totalTimeOnIterations.value(key) / iterationsEncountered.value(key) <<
+    //                     totalTimeOnIterations.value(key) / partitionIterationsEncountered.value(key) <<
     //                     std::endl;
     //    }
     for(int y = 0; y < params.height; y++)
@@ -164,7 +164,7 @@ void Benchmark::singleRun()
     int legalIterations;
 
     timer.start();
-    //    for(int i = 0; i < 1000; i++)
+    //    for(int i = 0; i < 100; i++)
     //    {
     //        solver[i]->partitionCalculate();
     //    }
@@ -174,40 +174,40 @@ void Benchmark::singleRun()
 
     solver.partitionCalculate();
 
-    //    runTime += timer.elapsed() /2.0;
-    //    numConstrainedHoles = solver[0]->getConstrainedHoles();
-    //    partitions = solver[1]->getPartitions();
-    //    standardIterations = solver[0]->getIterations();
+    //    runTime += timer.elapsed() /100.0;
+        numConstrainedHoles = solver.getConstrainedHoles();
+        partitions = solver.getPartitions();
+    //    partitionIterations = solver[0]->getIterations();
     //    partitionIterations = solver[1]->getIterations();
     //    legalIterations = solver[0]->getLegalIterations();
 
-    //    if(clicksEncountered.contains(clicks))
-    //    {
-    //        clicksEncountered.insert(clicks, clicksEncountered.value(clicks) + 1);
-    //    }
-    //    else
-    //    {
-    //        clicksEncountered.insert(clicks, 1);
-    //    }
-    //    if(standardIterationsEncountered.contains(standardIterations))
-    //    {
-    //        standardIterationsEncountered.insert(standardIterations, standardIterationsEncountered.value(standardIterations) + 1);
-    //        totalTimeOnIterations.insert(standardIterations, totalTimeOnIterations.value(standardIterations) + runTime);
-    //    }
-    //    else
-    //    {
-    //        standardIterationsEncountered.insert(standardIterations, 1);
-    //        totalTimeOnIterations.insert(standardIterations, runTime);
-    //    }
+        if(clicksEncountered.contains(clicks))
+        {
+            clicksEncountered.insert(clicks, clicksEncountered.value(clicks) + 1);
+        }
+        else
+        {
+            clicksEncountered.insert(clicks, 1);
+        }
+    //        if(standardIterationsEncountered.contains(standardIterations))
+    //        {
+    //            standardIterationsEncountered.insert(standardIterations, standardIterationsEncountered.value(standardIterations) + 1);
+    //            totalTimeOnIterations.insert(standardIterations, totalTimeOnIterations.value(standardIterations) + runTime);
+    //        }
+    //        else
+    //        {
+    //            standardIterationsEncountered.insert(standardIterations, 1);
+    //            totalTimeOnIterations.insert(standardIterations, runTime);
+    //        }
     //    if(partitionIterationsEncountered.contains(partitionIterations))
     //    {
-    //        partitionIterationsEncountered.insert(standardIterations, partitionIterationsEncountered.value(partitionIterations) + 1);
-    //        totalTimeOnIterations.insert(standardIterations, totalTimeOnIterations.value(standardIterations) + runTime);
+    //        partitionIterationsEncountered.insert(partitionIterations, partitionIterationsEncountered.value(partitionIterations) + 1);
+    //        totalTimeOnIterations.insert(partitionIterations, totalTimeOnIterations.value(standardIterations) + runTime);
     //    }
     //    else
     //    {
     //        partitionIterationsEncountered.insert(partitionIterations, 1);
-    //        totalTimeOnIterations.insert(standardIterations, runTime);
+    //        totalTimeOnIterations.insert(partitionIterations, runTime);
     //    }
 
     //    if(constrainedHolesEncountered.contains(numConstrainedHoles))
@@ -230,19 +230,19 @@ void Benchmark::singleRun()
     //        partitionsEncountered.insert(partitions, partitionsEncountered.value(partitions) + 1);
     //        totalTimeOnPartitions.insert(partitions, totalTimeOnPartitions.value(partitions) + runTime);
     //    }
-    //    if(constrainedHolesOnClicks.contains(clicks))
-    //    {
-    //        constrainedHolesOnClicks.value(clicks)->append(numConstrainedHoles);
-    //        partitionsOnClicks.value(clicks)->append(partitions);
-    //    }
-    //    else
-    //    {
-    //        constrainedHolesOnClicks.insert(clicks,new QList<int>);
-    //        partitionsOnClicks.insert(clicks, new QList<int>);
-    //        constrainedHolesOnClicks.value(clicks)->append(numConstrainedHoles);
-    //        partitionsOnClicks.value(clicks)->append(partitions);
+        if(constrainedHolesOnClicks.contains(clicks))
+        {
+            constrainedHolesOnClicks.value(clicks)->append(numConstrainedHoles);
+            partitionsOnClicks.value(clicks)->append(partitions);
+        }
+        else
+        {
+            constrainedHolesOnClicks.insert(clicks,new QList<int>);
+            partitionsOnClicks.insert(clicks, new QList<int>);
+            constrainedHolesOnClicks.value(clicks)->append(numConstrainedHoles);
+            partitionsOnClicks.value(clicks)->append(partitions);
 
-    //    }
+        }
 
 
     while(!board.hasWon())
@@ -281,14 +281,14 @@ void Benchmark::singleRun()
                         bestX = x;
                         bestY = y;
 
-//                        lowestridgedistance = 1.0;
-//                        for(int i = 0; i < 4; i++)
-//                        {
-//                            if(std::abs(neighborSum - ridgepoints[i]) < lowestridgedistance)
-//                            {
-//                                lowestridgedistance = std::abs(neighborSum - ridgepoints[i]);
-//                            }
-//                        }
+                        //                        lowestridgedistance = 1.0;
+                        //                        for(int i = 0; i < 4; i++)
+                        //                        {
+                        //                            if(std::abs(neighborSum - ridgepoints[i]) < lowestridgedistance)
+                        //                            {
+                        //                                lowestridgedistance = std::abs(neighborSum - ridgepoints[i]);
+                        //                            }
+                        //                        }
                     }
                     else if(probabilityArray[index] == lowestprobability)
                     {
@@ -311,26 +311,26 @@ void Benchmark::singleRun()
                             }
                         }
 
-//                        ridgedistance = 1.0;
-//                        for(int i = 0; i < 4; i++)
-//                        {
-//                            if(std::abs(neighborSum - ridgepoints[i]) < ridgedistance)
-//                            {
-//                                ridgedistance = std::abs(neighborSum - ridgepoints[i]);
-//                            }
-//                        }
-//                        if(ridgedistance < lowestridgedistance)
-//                        {
-//                            bestX = x;
-//                            bestY = y;
-//                            lowestridgedistance = ridgedistance;
-//                        }
-                                                if(neighborSum > highestNeighborSum)
-                                                {
-                                                    bestX = x;
-                                                    bestY = y;
-                                                    highestNeighborSum = neighborSum;
-                                                }
+                        //                        ridgedistance = 1.0;
+                        //                        for(int i = 0; i < 4; i++)
+                        //                        {
+                        //                            if(std::abs(neighborSum - ridgepoints[i]) < ridgedistance)
+                        //                            {
+                        //                                ridgedistance = std::abs(neighborSum - ridgepoints[i]);
+                        //                            }
+                        //                        }
+                        //                        if(ridgedistance < lowestridgedistance)
+                        //                        {
+                        //                            bestX = x;
+                        //                            bestY = y;
+                        //                            lowestridgedistance = ridgedistance;
+                        //                        }
+                        if(neighborSum > highestNeighborSum)
+                        {
+                            bestX = x;
+                            bestY = y;
+                            highestNeighborSum = neighborSum;
+                        }
                     }
                 }
                 index++;
@@ -379,54 +379,64 @@ void Benchmark::singleRun()
         {
             rupees += 300;
         }
-        timer.restart();
+        //timer.restart();
 
-        //        for(int i = 0; i < 2; i++)
+        //        for(int i = 0; i < 100; i++)
         //        {
         //            solver[i]->setCell(bestX, bestY, newSpot);
         //        }
         solver.setCell(bestX, bestY, newSpot);
         //        individualSetupTime = timer.elapsed() / 2.0;
         //        setupTime += individualSetupTime;
-        //        timer.restart();
-        //        for(int i = 0; i < 1000; i++)
+        timer.restart();
+        //        for(int i = 0; i < 100; i++)
         //        {
         //            solver[i]->partitionCalculate();
         //        }
         solver.partitionCalculate();
         //        solver[0]->standardCalculate();
         //        solver[1]->partitionCalculate();
-        //        individualRunTime = timer.elapsed() / 2.0;
+        //individualRunTime = timer.elapsed() / 100.0;
         //        runTime += individualRunTime;
 
-        //        numConstrainedHoles = solver[0]->getConstrainedHoles();
-        //        partitions = solver[1]->getPartitions();
-        //        standardIterations = solver[0]->getIterations();
+        numConstrainedHoles = solver.getConstrainedHoles();
+                partitions = solver.getPartitions();
+        //partitionIterations = solver[0]->getIterations();
         //        partitionIterations = solver[1]->getIterations();
 
         //std::cout << clicks << "\t " << numConstrainedHoles  << "\t" << partitions << std::endl;
 
         //        legalIterations = solver[0]->getLegalIterations();
 
-        //        if(clicksEncountered.contains(clicks))
+                if(clicksEncountered.contains(clicks))
+                {
+                    clicksEncountered.insert(clicks, clicksEncountered.value(clicks) + 1);
+                    totalSetupTimeForClicks.insert(clicks, totalSetupTimeForClicks.value(clicks) + individualSetupTime);
+                }
+                else
+                {
+                    clicksEncountered.insert(clicks, 1);
+                    totalSetupTimeForClicks.insert(clicks, individualSetupTime);
+                }
+        //                if(standardIterationsEncountered.contains(standardIterations))
+        //                {
+        //                    standardIterationsEncountered.insert(standardIterations, standardIterationsEncountered.value(standardIterations) + 1);
+        //                    totalTimeOnIterations.insert(standardIterations, totalTimeOnIterations.value(standardIterations) + individualRunTime);
+        //                }
+        //                else
+        //                {
+        //                    standardIterationsEncountered.insert(standardIterations, 1);
+        //                    totalTimeOnIterations.insert(standardIterations, individualRunTime);
+        //                }
+        //        if(partitionIterationsEncountered.contains(partitionIterations))
         //        {
-        //            clicksEncountered.insert(clicks, clicksEncountered.value(clicks) + 1);
-        //            totalSetupTimeForClicks.insert(clicks, totalSetupTimeForClicks.value(clicks) + individualSetupTime);
+        //            partitionIterationsEncountered.insert(partitionIterations, partitionIterationsEncountered.value(partitionIterations) + 1);
+        //            totalTimeOnIterations.insert(partitionIterations, totalTimeOnIterations.value(partitionIterations) + individualRunTime);
         //        }
         //        else
         //        {
-        //            clicksEncountered.insert(clicks, 1);
-        //            totalSetupTimeForClicks.insert(clicks, individualSetupTime);
-        //        }
-        //        if(standardIterationsEncountered.contains(standardIterations))
-        //        {
-        //            standardIterationsEncountered.insert(standardIterations, standardIterationsEncountered.value(standardIterations) + 1);
-        //            totalTimeOnIterations.insert(standardIterations, totalTimeOnIterations.value(standardIterations) + individualRunTime);
-        //        }
-        //        else
-        //        {
-        //            standardIterationsEncountered.insert(standardIterations, 1);
-        //            totalTimeOnIterations.insert(standardIterations, individualRunTime);
+        //            partitionIterationsEncountered.insert(partitionIterations, 1);
+        //            totalTimeOnIterations.insert(partitionIterations, individualRunTime);
         //        }
 
         //        if(constrainedHolesEncountered.contains(numConstrainedHoles))
@@ -449,18 +459,18 @@ void Benchmark::singleRun()
         //            partitionsEncountered.insert(partitions, 1);
         //            totalTimeOnPartitions.insert(partitions, individualRunTime);
         //        }
-        //        if(constrainedHolesOnClicks.contains(clicks))
-        //        {
-        //            constrainedHolesOnClicks.value(clicks)->append(numConstrainedHoles);
-        //            partitionsOnClicks.value(clicks)->append(partitions);
-        //        }
-        //        else
-        //        {
-        //            constrainedHolesOnClicks.insert(clicks,new QList<int>);
-        //            partitionsOnClicks.insert(clicks, new QList<int>);
-        //            constrainedHolesOnClicks.value(clicks)->append(numConstrainedHoles);
-        //            partitionsOnClicks.value(clicks)->append(partitions);
-        //        }
+                if(constrainedHolesOnClicks.contains(clicks))
+                {
+                    constrainedHolesOnClicks.value(clicks)->append(numConstrainedHoles);
+                    partitionsOnClicks.value(clicks)->append(partitions);
+                }
+                else
+                {
+                    constrainedHolesOnClicks.insert(clicks,new QList<int>);
+                    partitionsOnClicks.insert(clicks, new QList<int>);
+                    constrainedHolesOnClicks.value(clicks)->append(numConstrainedHoles);
+                    partitionsOnClicks.value(clicks)->append(partitions);
+                }
     }
     if(board.hasWon())
     {

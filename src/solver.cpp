@@ -63,8 +63,6 @@ void Solver::setCell(int x, int y, DugType::DugType type){
         Constraint * constraint = &constraints[index];
         constraint->maxBadness = type;
 
-        constrainedUnopenedHoles.remove(index);
-
         for(int filterY = y - 1; filterY < y + 2; filterY++)
         {
             if(filterY >= 0 && filterY < boardHeight)
@@ -146,7 +144,7 @@ void Solver::resetBoard()
         if(board[i] != DugType::DugType::undug)
         {
             x = i % boardWidth;
-            y = i / boardHeight;
+            y = i / boardWidth;
             setCell(x, y, board[i]);
         }
 
@@ -177,25 +175,33 @@ void Solver::reload()
 void Solver::standardCalculate()
 {
     bool ** array = new bool*[constrainedUnopenedHoles.size()];
-    int i = 0;
+    int numConstrainedHoles = 0;
     QSetIterator<int> setIter(constrainedUnopenedHoles);
     int hole;
     while(setIter.hasNext())
     {
         hole = setIter.next();
-        array[i] = &badSpots[hole];
-        i++;
+        array[numConstrainedHoles] = &badSpots[hole];
+        numConstrainedHoles++;
     }
     ConfigurationIterator it(
                 array,
-                i,
+                numConstrainedHoles,
                 std::max(bombs + rupoors - knownBadSpots.size() - unconstrainedUnopenedHoles.size(), 0),
-                std::min(i, bombs + rupoors - knownBadSpots.size()));
+                std::min(numConstrainedHoles, bombs + rupoors - knownBadSpots.size()));
     double configurationWeight;
-    totalWeight = 0;
+    totalWeight = 0.0;
     double probability;
 
-    std::fill(probabilities, probabilities + numHoles, 0.0);
+    for(int i = 0; i < numHoles; i++)
+    {
+        if(constrainedUnopenedHoles.contains(i) ||
+                unconstrainedUnopenedHoles.contains(i))
+        {
+            probabilities[i] = 0.0;
+        }
+
+    }
 
     totalIterations = 0;
     legalIterations = 0;
@@ -214,9 +220,10 @@ void Solver::standardCalculate()
         totalWeight += configurationWeight;
         for(int i = 0; i < numHoles; i++)
         {
-
-            probabilities[i] += badSpots[i] ? configurationWeight : 0.0;
-
+            if(constrainedUnopenedHoles.contains(i))
+            {
+                probabilities[i] += badSpots[i] ? configurationWeight : 0.0;
+            }
         }
         setIter = QSetIterator<int>(unconstrainedUnopenedHoles);
         probability = (double)(configurationWeight *
@@ -239,6 +246,13 @@ void Solver::standardCalculate()
     for(int i = 0; i < numHoles; i++)
     {
 
+        if(numConstrainedHoles == 0 && totalWeight == 0.0)
+        {
+            if(unconstrainedUnopenedHoles.contains((i)))
+            {
+                probabilities[i] = (bombs + rupoors)/(double)numHoles;
+            }
+        }
         if(probabilities[i] == totalWeight)
         {
             if(!knownBadSpots.contains(i))
@@ -248,7 +262,10 @@ void Solver::standardCalculate()
         }
         else if(probabilities[i] == 0.0)
         {
-            setKnownSafeSpot(i);
+            if(!knownSafeSpots.contains((i)))
+            {
+                setKnownSafeSpot(i);
+            }
         }
         else
         {
@@ -276,7 +293,7 @@ void Solver::partitionCalculate()
     bombsAmongConstrainedHoles = bombs + rupoors;
     double configurationWeight;
     int hole;
-    totalWeight = 0;
+    totalWeight = 0.0;
     double probability;
     for(int i = 0; i < numHoles; i++)
     {
@@ -424,7 +441,7 @@ void Solver::setKnownBadSpot(int index)
     int constrainedHole;
     int filterIndex;
     int unimportantHole;
-    int y = index / boardHeight;
+    int y = index / boardWidth;
     int x = index % boardWidth;
     for(int filterY = y - 1; filterY < y + 2; filterY++)
     {
@@ -487,7 +504,7 @@ void Solver::setKnownSafeSpot(int index)
     int constrainedHole;
     int filterIndex;
     int unimportantHole;
-    int y = index / boardHeight;
+    int y = index / boardWidth;
     int x = index % boardWidth;
     for(int filterY = y - 1; filterY < y + 2; filterY++)
     {
