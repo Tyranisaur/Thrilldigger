@@ -1,25 +1,16 @@
-#ifndef PARTITION_H
-#define PARTITION_H
-#include <QList>
-#include <QSet>
+#pragma once
+#include <unordered_set>
+#include <vector>
 
 struct Constraint;
-struct Hole;
 
-struct Partition{
-    QSet<Constraint*> * constraints;
-    QList<int> holes;
-    char badness;
+struct Partition {
+    std::unordered_set<Constraint *> constraints;
+    std::vector<int> holes;
+    int badness = 0;
 
-    bool operator==(Partition & other)
+    bool operator==(Partition &other) const
     {
-        return *(this->constraints) == *(other.constraints);
+        return this->constraints == other.constraints;
     }
-
-
-
-
-
 };
-
-#endif // PARTITION_H

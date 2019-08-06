@@ -8,6 +8,8 @@ QT       += core gui
 
 QTPLUGIN += gif
 
+CONFIG += c++17
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Thrilldigger
@@ -20,7 +22,6 @@ SOURCES += src/main.cpp \
     src/board.cpp \
     src/solverwindow.cpp \
     src/solver.cpp \
-    src/configurationiterator.cpp \
     src/partitioniterator.cpp \
     src/benchmark.cpp
 
@@ -32,7 +33,6 @@ HEADERS  += \
     headers/solver.h \
     headers/dugtype.h \
     headers/problemparameters.h \
-    headers/configurationiterator.h \
     headers/constraint.h \
     headers/partition.h \
     headers/partitioniterator.h \

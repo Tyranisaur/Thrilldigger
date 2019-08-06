@@ -1,24 +1,20 @@
-#ifndef SOLVER_H
-#define SOLVER_H
+#pragma once
+#include "constraint.h"
 #include "dugtype.h"
-#include <QList>
-#include <QSet>
+#include "partition.h"
+#include "problemparameters.h"
 #include <QObject>
-
-struct ProblemParameters;
-struct Hole;
-struct Constraint;
-struct Partition;
+#include <unordered_set>
+#include <vector>
 
 class Solver : public QObject
 {
     Q_OBJECT
 public:
-    Solver(ProblemParameters * params);
-    ~Solver();
+    Solver(const ProblemParameters &params);
 
     void setCell(int x, int y, DugType::DugType type);
-    double * getProbabilityArray();
+    const std::vector<double> &getProbabilityArray() const;
     void reload();
 
     double getTotalNumConfigurations();
@@ -31,40 +27,33 @@ signals:
     void done();
 
 public slots:
-    void standardCalculate();
     void partitionCalculate();
 
-
-
 private:
-    double * probabilities;
-    QList<Constraint*> constraintList;
-    Constraint * constraints;
+    inline static const std::unordered_set<Constraint *> emptySet;
+    ProblemParameters params_;
+    int numHoles = 0;
+    int bombsAmongConstrainedHoles = 0;
+    std::vector<double> probabilities;
+    std::vector<Constraint *> constraintList;
+    std::vector<Constraint> constraints;
 
-    Partition * partitions;
-    bool * badSpots;
+    std::vector<Partition> partitions;
+    std::vector<bool> badSpots;
 
-    QSet<Constraint*> * imposingConstraints;
-    QSet<int>  constrainedUnopenedHoles;
-    QSet<int>  unconstrainedUnopenedHoles;
-    QSet<int>  knownSafeSpots;
-    QSet<int>  knownBadSpots;
-    QList<Partition*> partitionList;
-    QList<Partition*> sunkenPartitions;
+    std::vector<std::unordered_set<Constraint *>> imposingConstraints;
+    std::unordered_set<int> constrainedUnopenedHoles;
+    std::unordered_set<int> unconstrainedUnopenedHoles;
+    std::unordered_set<int> knownSafeSpots;
+    std::unordered_set<int> knownBadSpots;
+    std::vector<Partition *> partitionList;
+    std::vector<Partition *> sunkenPartitions;
 
-    QSet<Constraint*> emptySet;
-    int bombsAmongConstrainedHoles;
-    int boardHeight;
-    int boardWidth;
-    int numHoles;
-    int bombs;
-    int rupoors;
-    DugType::DugType * board;
-    double totalWeight;
-    int legalIterations;
-    uint64_t totalIterations;
-    int numConstrained;
-
+    std::vector<DugType::DugType> board;
+    double totalWeight = 0.0;
+    uint64_t totalIterations = 0;
+    int legalIterations = 0;
+    int numConstrained = 0;
 
     bool validateBoard();
     void setKnownSafeSpot(int index);
@@ -73,5 +62,3 @@ private:
     void generatePartitions();
     double choose(unsigned long long n, unsigned long long k);
 };
-
-#endif // SOLVER_H

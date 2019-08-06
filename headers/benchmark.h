@@ -1,27 +1,21 @@
-#ifndef BENCHMARK_H
-#define BENCHMARK_H
-
-
-#include "dugtype.h"
-#include <QObject>
-#include <QMap>
-#include "problemparameters.h"
-#include <QThread>
+#pragma once
 
 #include "board.h"
+#include "dugtype.h"
+#include "problemparameters.h"
 #include "solver.h"
-
+#include <QMap>
+#include <QObject>
+#include <QThread>
+#include <array>
 
 class Benchmark : public QObject
 {
     Q_OBJECT
 public:
-    explicit Benchmark(ProblemParameters params);
-    ~Benchmark();
+    explicit Benchmark(const ProblemParameters &params);
 
     void start();
-
-
 
 signals:
 
@@ -49,7 +43,6 @@ private:
     QMap<int, QList<int> *> constrainedHolesOnClicks;
     QMap<int, QList<int> *> partitionsOnClicks;
 
-
     int totalBadSpots;
     int wins;
     uint64_t totalSetupTime;
@@ -58,14 +51,11 @@ private:
     uint64_t totalRupees;
     int totalClicks;
     QThread thread;
-    double * probabilityArray;
+    const std::vector<double> *probabilityArray;
     ProblemParameters params;
     Board board;
     Solver solver;
-    DugType::DugType ** knownBoard;
+    DugType::DugType **knownBoard;
 
-    double * ridgepoints;
-
+    std::array<double, 4> ridgepoints = {0.5, 2.5, 4.5, 6.5};
 };
-
-#endif // BENCHMARK_H
