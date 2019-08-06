@@ -1,30 +1,24 @@
-#ifndef SIMULATORWINDOW_H
-#define SIMULATORWINDOW_H
+#pragma once
 
-#include <QMainWindow>
 #include "board.h"
+#include "ui_simulatorwindow.h"
+#include "vector2d.h"
+#include <QMainWindow>
+#include <memory>
 
-namespace Ui {
-class SimulatorWindow;
-}
-namespace DugType {
-enum DugType;
-}
 class QPushButton;
 class QCloseEvent;
 
 struct ProblemParameters;
-
 
 class SimulatorWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit SimulatorWindow(ProblemParameters * params, QWidget *parent = 0);
-    ~SimulatorWindow();
-    void closeEvent(QCloseEvent * e);
-    int numRupees();
+    explicit SimulatorWindow(const ProblemParameters &params,
+                             QWidget *parent = nullptr);
+    void closeEvent(QCloseEvent *e);
 
 public slots:
 
@@ -35,14 +29,12 @@ signals:
     void openedCell(int x, int y, DugType::DugType type);
 
 private:
-
-    Ui::SimulatorWindow *ui;
-    QPushButton *** cellGrid;
+    std::unique_ptr<Ui::SimulatorWindow> ui;
+    Vector2d<QPushButton *> cellGrid;
     int boardWidth;
     int boardHeight;
     int rupeeTotal;
     Board board;
 
+    void disableAllButtons();
 };
-
-#endif // SIMULATORWINDOW_H

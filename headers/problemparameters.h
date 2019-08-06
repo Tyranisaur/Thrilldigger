@@ -1,11 +1,8 @@
-#ifndef PROBLEMPARAMETERS_H
-#define PROBLEMPARAMETERS_H
+#pragma once
 
-
-struct ProblemParameters{
-    const int width;
-    const int height;
-    const int bombs;
-    const int rupoors;
+struct ProblemParameters {
+    const int width = 0;
+    const int height = 0;
+    const int bombs = 0;
+    const int rupoors = 0;
 };
-#endif // PROBLEMPARAMETERS_H

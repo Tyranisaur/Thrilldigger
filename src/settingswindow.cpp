@@ -1,57 +1,34 @@
 #include "headers/settingswindow.h"
-#include "ui_settingswindow.h"
+
+#include "headers/benchmark.h"
+#include "headers/dugtype.h"
+#include "headers/problemparameters.h"
 #include "headers/simulatorwindow.h"
 #include "headers/solverwindow.h"
-#include "headers/problemparameters.h"
-#include "headers/benchmark.h"
-#include "headers/DugType.h"
+#include "ui_settingswindow.h"
 #include <QCloseEvent>
 
-
-SettingsWindow::SettingsWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::SettingsWindow)
+SettingsWindow::SettingsWindow(QWidget *parent)
+    : QMainWindow(parent), ui(std::make_unique<Ui::SettingsWindow>())
 {
     ui->setupUi(this);
     ui->customRadioButton->setChecked(true);
-    simulator = nullptr;
-    solver = nullptr;
 }
-
-SettingsWindow::~SettingsWindow()
-{
-    if(simulator != nullptr)
-    {
-        simulator->close();
-    }
-    if(solver != nullptr)
-    {
-        solver->close();
-    }
-    delete ui;
-}
-
-
-
 
 void SettingsWindow::on_SimulatorButton_clicked()
 {
-    ProblemParameters params = {
-        ui->widthSpinner->value(),
-        ui->heightSpinner->value(),
-        ui->bombsSpinner->value(),
-        ui->rupoorsSpinner->value()
-    };
-    if(params.height * params.width > 0 ){
-        if(params.height * params.width > params.bombs + params.rupoors)
-        {
-            if(simulator != nullptr)
-            {
+    ProblemParameters params = {ui->widthSpinner->value(),
+                                ui->heightSpinner->value(),
+                                ui->bombsSpinner->value(),
+                                ui->rupoorsSpinner->value()};
+    if (params.height * params.width > 0) {
+        if (params.height * params.width > params.bombs + params.rupoors) {
+            if (simulator != nullptr) {
                 simulator->close();
             }
-            simulator = new SimulatorWindow(&params);
+            simulator = std::make_unique<SimulatorWindow>(params);
 
-            connect(simulator,
+            connect(simulator.get(),
                     SIGNAL(closing()),
                     this,
                     SLOT(simWindowDestroyed()));
@@ -63,22 +40,18 @@ void SettingsWindow::on_SimulatorButton_clicked()
 
 void SettingsWindow::on_SolverButton_clicked()
 {
-    ProblemParameters params = {
-        ui->widthSpinner->value(),
-        ui->heightSpinner->value(),
-        ui->bombsSpinner->value(),
-        ui->rupoorsSpinner->value()
-    };
-    if(params.height * params.width > 0 ){
-        if(params.height * params.width > params.bombs + params.rupoors)
-        {
-            if(solver != nullptr)
-            {
+    ProblemParameters params = {ui->widthSpinner->value(),
+                                ui->heightSpinner->value(),
+                                ui->bombsSpinner->value(),
+                                ui->rupoorsSpinner->value()};
+    if (params.height * params.width > 0) {
+        if (params.height * params.width > params.bombs + params.rupoors) {
+            if (solver != nullptr) {
                 solver->close();
             }
-            solver = new SolverWindow(&params);
+            solver = std::make_unique<SolverWindow>(params);
 
-            connect(solver,
+            connect(solver.get(),
                     SIGNAL(closing()),
                     this,
                     SLOT(solverWindowDestroyed()));
@@ -132,7 +105,6 @@ void SettingsWindow::on_customRadioButton_clicked()
     ui->rupoorsSpinner->setEnabled(true);
 }
 
-
 void SettingsWindow::simWindowDestroyed()
 {
     simulator = nullptr;
@@ -144,12 +116,10 @@ void SettingsWindow::solverWindowDestroyed()
 }
 void SettingsWindow::closeEvent(QCloseEvent *e)
 {
-    if(simulator != nullptr)
-    {
+    if (simulator != nullptr) {
         simulator->close();
     }
-    if(solver != nullptr)
-    {
+    if (solver != nullptr) {
         solver->close();
     }
     e->accept();
@@ -157,50 +127,38 @@ void SettingsWindow::closeEvent(QCloseEvent *e)
 
 void SettingsWindow::on_bothButton_clicked()
 {
-    ProblemParameters params = {
-        ui->widthSpinner->value(),
-        ui->heightSpinner->value(),
-        ui->bombsSpinner->value(),
-        ui->rupoorsSpinner->value()
-    };
-    if(params.height * params.width > 0 ){
-        if(params.height * params.width > params.bombs + params.rupoors)
-        {
-            if(solver != nullptr)
-            {
-                solver->close();
-            }
-            if(simulator != nullptr)
-            {
-                simulator->close();
-            }
-            solver = new SolverWindow(&params);
-            simulator = new SimulatorWindow(&params);
+    ProblemParameters params = {ui->widthSpinner->value(),
+                                ui->heightSpinner->value(),
+                                ui->bombsSpinner->value(),
+                                ui->rupoorsSpinner->value()};
+    if (params.height * params.width > 0) {
+        if (params.height * params.width > params.bombs + params.rupoors) {
+            solver = std::make_unique<SolverWindow>(params);
+            simulator = std::make_unique<SimulatorWindow>(params);
 
-            connect(simulator,
+            connect(simulator.get(),
                     SIGNAL(closing()),
                     this,
                     SLOT(simWindowDestroyed()));
 
-
-            connect(solver,
+            connect(solver.get(),
                     SIGNAL(closing()),
                     this,
                     SLOT(solverWindowDestroyed()));
 
-            connect(simulator,
+            connect(simulator.get(),
                     SIGNAL(openedCell(int, int, DugType::DugType)),
-                    solver,
+                    solver.get(),
                     SLOT(cellOpened(int, int, DugType::DugType)));
 
-            connect(solver,
-                    SIGNAL(destroyed(QObject*)),
-                    simulator,
+            connect(solver.get(),
+                    SIGNAL(destroyed(QObject *)),
+                    simulator.get(),
                     SLOT(close()));
 
-            connect(simulator,
-                    SIGNAL(destroyed(QObject*)),
-                    solver,
+            connect(simulator.get(),
+                    SIGNAL(destroyed(QObject *)),
+                    solver.get(),
                     SLOT(close()));
 
             simulator->show();
@@ -211,29 +169,21 @@ void SettingsWindow::on_bothButton_clicked()
 
 void SettingsWindow::on_benchmarkButton_clicked()
 {
-    ProblemParameters params = ProblemParameters{
-            ui->widthSpinner->value(),
-            ui->heightSpinner->value(),
-            ui->bombsSpinner->value(),
-            ui->rupoorsSpinner->value()
-};
-    if(params.height * params.width > 0  &&
-        params.height * params.width > params.bombs + params.rupoors)
-        {
-            ui->SimulatorButton->setEnabled(false);
-            ui->SolverButton->setEnabled(false);
-            ui->bothButton->setEnabled(false);
-            ui->benchmarkButton->setEnabled(false);
+    auto params = ProblemParameters{ui->widthSpinner->value(),
+                                    ui->heightSpinner->value(),
+                                    ui->bombsSpinner->value(),
+                                    ui->rupoorsSpinner->value()};
+    if (params.height * params.width > 0 &&
+        params.height * params.width > params.bombs + params.rupoors) {
+        ui->SimulatorButton->setEnabled(false);
+        ui->SolverButton->setEnabled(false);
+        ui->bothButton->setEnabled(false);
+        ui->benchmarkButton->setEnabled(false);
 
-            benchmark = new Benchmark(params);
-            connect(benchmark,
-                    SIGNAL(done()),
-                    this,
-                    SLOT(benchmarkDone()));
-            benchmark->start();
-        }
-
-
+        benchmark = std::make_unique<Benchmark>(params);
+        connect(benchmark.get(), SIGNAL(done()), this, SLOT(benchmarkDone()));
+        benchmark->start();
+    }
 }
 
 void SettingsWindow::benchmarkDone()
@@ -242,5 +192,5 @@ void SettingsWindow::benchmarkDone()
     ui->SolverButton->setEnabled(true);
     ui->bothButton->setEnabled(true);
     ui->benchmarkButton->setEnabled(true);
-    delete benchmark;
+    benchmark = nullptr;
 }

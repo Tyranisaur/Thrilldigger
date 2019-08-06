@@ -1,10 +1,9 @@
-#ifndef DUGTYPE_H
-#define DUGTYPE_H
+#pragma once
 
+namespace DugType
+{
 
-namespace DugType {
-
-enum DugType{
+enum DugType : int {
     undug = -3,
     bomb = -2,
     rupoor = -1,
@@ -14,5 +13,4 @@ enum DugType{
     silver = 6,
     gold = 8,
 };
-}
-#endif // DUGTYPE_H
+} // namespace DugType

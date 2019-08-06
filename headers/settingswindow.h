@@ -1,14 +1,11 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
+#include "benchmark.h"
+#include "simulatorwindow.h"
+#include "solverwindow.h"
+#include "ui_settingswindow.h"
 #include <QMainWindow>
 
-namespace Ui {
-class SettingsWindow;
-}
-class SimulatorWindow;
-class SolverWindow;
-class Benchmark;
 class QCloseEvent;
 
 class SettingsWindow : public QMainWindow
@@ -16,9 +13,8 @@ class SettingsWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit SettingsWindow(QWidget *parent = 0);
-    ~SettingsWindow();
-    void closeEvent(QCloseEvent * e);
+    explicit SettingsWindow(QWidget *parent = nullptr);
+    void closeEvent(QCloseEvent *e);
 
 private slots:
 
@@ -45,12 +41,8 @@ private slots:
     void benchmarkDone();
 
 private:
-    Benchmark * benchmark;
-    Ui::SettingsWindow *ui;
-    SimulatorWindow * simulator;
-    SolverWindow * solver;
-
-
+    std::unique_ptr<Benchmark> benchmark;
+    std::unique_ptr<Ui::SettingsWindow> ui;
+    std::unique_ptr<SimulatorWindow> simulator;
+    std::unique_ptr<SolverWindow> solver;
 };
-
-#endif // MAINWINDOW_H

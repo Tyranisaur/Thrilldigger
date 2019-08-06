@@ -1,13 +1,7 @@
-#ifndef CONSTRAINT_H
-#define CONSTRAINT_H
+#pragma once
 #include <vector>
-#include <QList>
 
-struct Hole;
-
-struct Constraint{
-    int maxBadness;
-    QList<int> holes;
+struct Constraint {
+    int maxBadness = 0;
+    std::vector<int> holes;
 };
-
-#endif // CONSTRAINT_H

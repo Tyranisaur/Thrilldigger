@@ -1,33 +1,22 @@
-#ifndef BOARD_H
-#define BOARD_H
-#include "DugType.h"
+#pragma once
+#include "dugtype.h"
 
-
-
-struct ProblemParameters;
-
+#include "problemparameters.h"
+#include "vector2d.h"
 
 class Board
 {
 
 public:
-    Board(ProblemParameters * params);
-    ~Board();
+    explicit Board(const ProblemParameters &params);
 
-    DugType::DugType getCell(int x, int y);
-    bool hasWon();
+    DugType::DugType getCell(int x, int y) &;
+    bool hasWon() const &;
 
-    void reload();
+    void reload() &;
 
 private:
-    int height;
-    int width;
-    int bombs;
-    int rupoors;
-    bool ** opened;
-    DugType::DugType ** boardRep;
+    ProblemParameters problemParams_;
+    Vector2d<bool> opened_;
+    Vector2d<DugType::DugType> boardRep_;
 };
-
-
-
-#endif // BOARD_H

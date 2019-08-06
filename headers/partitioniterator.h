@@ -1,33 +1,28 @@
-#ifndef PARTITIONITERATOR_H
-#define PARTITIONITERATOR_H
-#include <QList>
+#pragma once
+#include <vector>
 
 struct Partition;
 
 class PartitionIterator
 {
 public:
-    PartitionIterator(
-            QList<Partition*>* partitionList,
-            bool * badspots,
-            QList<Partition*>* sunkenPartitions,
-            int numBadSpots);
+    PartitionIterator(std::vector<Partition *> *partitionList,
+                      std::vector<bool> &badspots,
+                      std::vector<Partition *> *sunkenPartitions,
+                      int numBadSpots);
 
-    ~PartitionIterator();
     bool hasNext();
     double iterate();
 
 private:
     double choose(int n, int k);
-    QList<Partition*>* partitionList;
+    std::vector<Partition *> &partitionList;
     double weight;
-    int * indexArray;
+    std::vector<int> indexArray;
     int indexArrayLength;
     int listLength;
     bool started;
-    QList<int> maxAmountsPerPartition;
-    QList<int> minAmountsPerPartition;
-    bool * badSpots;
+    std::vector<int> maxAmountsPerPartition;
+    std::vector<int> minAmountsPerPartition;
+    std::vector<bool> &badSpots;
 };
-
-#endif // PARTITIONITERATOR_H

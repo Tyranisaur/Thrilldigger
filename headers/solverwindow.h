@@ -1,33 +1,30 @@
-#ifndef SOLVERWINDOW_H
-#define SOLVERWINDOW_H
+#pragma once
 
-#include <QMainWindow>
 #include "solver.h"
+#include "ui_solverwindow.h"
+#include "vector2d.h"
+#include <QMainWindow>
+#include <qmovie.h>
+#include <qthread.h>
 
-namespace Ui {
-    class SolverWindow;
-}
-
-namespace DugType {
-    enum DugType;
+namespace DugType
+{
+enum DugType : int;
 }
 
 class QVBoxLayout;
-class QThread;
 class QCloseEvent;
-class QMovie;
 
 struct ProblemParameters;
-
 
 class SolverWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit SolverWindow(ProblemParameters * params, QWidget *parent = 0);
-    ~SolverWindow();
-    void closeEvent(QCloseEvent * e);
+    explicit SolverWindow(const ProblemParameters &params,
+                          QWidget *parent = nullptr);
+    void closeEvent(QCloseEvent *e);
 
 private slots:
     void on_calculateButton_clicked();
@@ -39,17 +36,14 @@ signals:
     void closing();
 
 private:
-    Ui::SolverWindow *ui;
-    QVBoxLayout *** cellGrid;
-    QMovie * movie;
-    DugType::DugType ** boardState;
+    std::unique_ptr<Ui::SolverWindow> ui;
+    Vector2d<QVBoxLayout *> cellGrid;
+    std::unique_ptr<QMovie> movie;
+    Vector2d<DugType::DugType> boardState;
     Solver solver;
-    QThread * thread;
-    double * probabilityArray;
+    std::unique_ptr<QThread> thread;
+    const std::vector<double> &probabilityArray;
     int boardWidth;
     int boardHeight;
     int numHoles;
-
 };
-
-#endif // SOLVERWINDOW_H

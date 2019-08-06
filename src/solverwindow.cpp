@@ -1,60 +1,51 @@
 #include "headers/solverwindow.h"
-#include "ui_solverwindow.h"
+
 #include "headers/board.h"
-#include "headers/problemparameters.h"
 #include "headers/dugtype.h"
+#include "headers/problemparameters.h"
 #include "headers/solver.h"
-#include <QVBoxLayout>
-#include <QCOmboBox>
-#include <QMenu>
+#include "ui_solverwindow.h"
+#include <QCloseEvent>
+#include <QComboBox>
 #include <QLabel>
+#include <QMenu>
 #include <QMovie>
 #include <QThread>
-#include <QCloseEvent>
+#include <QVBoxLayout>
+#include <cstddef>
 
-SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::SolverWindow),
-    solver(params)
+SolverWindow::SolverWindow(const ProblemParameters &params, QWidget *parent)
+    : QMainWindow(parent),
+      ui(std::make_unique<Ui::SolverWindow>()),
+      cellGrid(params.height, params.width),
+      boardState(params.height, params.width, DugType::undug),
+      movie(std::make_unique<QMovie>(":/resources/ajax-loader.gif")),
+      solver(params),
+      thread(std::make_unique<QThread>()),
+      probabilityArray(solver.getProbabilityArray())
+
 {
-    thread = new QThread();
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
-    QVBoxLayout * vLayout;
-    QPushButton * button;
-    QComboBox * menuButton;
-    probabilityArray = solver.getProbabilityArray();
-    solver.moveToThread(thread);
-    connect(thread,
-            SIGNAL(started()),
-            &solver,
-            SLOT(partitionCalculate()));
-    connect(&solver,
-            SIGNAL(done()),
-            this,
-            SLOT(processCalculation()));
-    boardHeight = params->height;
-    boardWidth = params->width;
+    solver.moveToThread(thread.get());
+    connect(
+        thread.get(), SIGNAL(started()), &solver, SLOT(partitionCalculate()));
+    connect(&solver, SIGNAL(done()), this, SLOT(processCalculation()));
+    boardHeight = params.height;
+    boardWidth = params.width;
     numHoles = boardHeight * boardWidth;
-    cellGrid = new QVBoxLayout **[boardHeight];
-    boardState = new DugType::DugType *[boardHeight];
-    movie = new QMovie(":/resources/ajax-loader.gif");
-    ui->animationLabel->setMovie(movie);
+    ui->animationLabel->setMovie(movie.get());
     movie->start();
     ui->animationLabel->hide();
 
-    for(int y = 0; y < boardHeight; y++)
-    {
-        cellGrid[y] = new QVBoxLayout*[boardWidth];
-        boardState[y] = new DugType::DugType[boardWidth];
-        for(int x = 0; x < boardWidth; x++)
-        {
-            vLayout = new QVBoxLayout;
+    for (int y = 0; y < boardHeight; y++) {
+        for (int x = 0; x < boardWidth; x++) {
+            auto *vLayout = new QVBoxLayout;
 
-            button = new QPushButton;
+            auto *button = new QPushButton;
             button->setEnabled(false);
             vLayout->addWidget(button);
-            menuButton = new QComboBox;
+            auto *menuButton = new QComboBox;
 
             menuButton->addItem("Undug");
             menuButton->addItem("Bomb");
@@ -65,46 +56,16 @@ SolverWindow::SolverWindow(ProblemParameters * params, QWidget *parent) :
             menuButton->addItem("Silver");
             menuButton->addItem("Gold");
 
-
-            connect(menuButton,
-                    &QComboBox::currentTextChanged,
-                    [=]()
-            {
+            connect(menuButton, &QComboBox::currentTextChanged, [=]() {
                 this->cellSet(x, y);
             });
 
             vLayout->addWidget(menuButton);
 
             ui->gridLayout->addLayout(vLayout, y, x, Qt::AlignHCenter);
-            cellGrid[y][x] = vLayout;
-            boardState[y][x] = DugType::DugType::undug;
-
+            cellGrid.ref(x, y) = vLayout;
         }
-
     }
-}
-
-SolverWindow::~SolverWindow()
-{
-    QComboBox * menuButton;
-    QPushButton * button;
-    for(int y = 0; y < boardHeight; y++)
-    {
-        for(int x = 0; x < boardWidth; x++)
-        {
-            menuButton = (QComboBox *)cellGrid[y][x]->itemAt(1)->widget();
-            button = (QPushButton *)cellGrid[y][x]->itemAt(0)->widget();
-            delete menuButton;
-            delete button;
-            delete cellGrid[y][x];
-        }
-        delete[] cellGrid[y];
-    }
-    delete thread;
-    delete ui;
-    delete[] cellGrid;
-    delete[] boardState;
-    delete movie;
 }
 
 void SolverWindow::on_calculateButton_clicked()
@@ -112,23 +73,22 @@ void SolverWindow::on_calculateButton_clicked()
     ui->animationLabel->show();
 
     thread->start();
-
 }
 
 void SolverWindow::processCalculation()
 {
     thread->exit();
-    QPushButton * button;
+    QPushButton *button;
     double lowest = 1.0;
     int index = 0;
-    for(int y = 0; y < boardHeight; y++)
-    {
-        for(int x = 0; x < boardWidth; x++)
-        {
-            if(boardState[y][x] == DugType::DugType::undug)
-            {
-                button = (QPushButton *)cellGrid[y][x]->itemAt(0)->widget();
-                button->setText(QString::number( probabilityArray[index] * 100, 'f', 2) + "% Bad");
+    for (int y = 0; y < boardHeight; y++) {
+        for (int x = 0; x < boardWidth; x++) {
+            if (boardState.at(x, y) == DugType::DugType::undug) {
+                button = static_cast<QPushButton *>(
+                    cellGrid.ref(x, y)->itemAt(0)->widget()); // NOLINT
+                button->setText(
+                    QString::number(probabilityArray[index] * 100, 'f', 2) +
+                    "% Bad");
                 lowest = std::min(lowest, probabilityArray[index]);
                 button->setStyleSheet("background: none");
             }
@@ -136,15 +96,12 @@ void SolverWindow::processCalculation()
         }
     }
     index = 0;
-    for(int y = 0; y < boardHeight; y++)
-    {
-        for(int x = 0; x < boardWidth; x++)
-        {
-            if(boardState[y][x] == DugType::DugType::undug)
-            {
-                if(probabilityArray[index] == lowest)
-                {
-                    button = (QPushButton *)cellGrid[y][x]->itemAt(0)->widget();
+    for (int y = 0; y < boardHeight; y++) {
+        for (int x = 0; x < boardWidth; x++) {
+            if (boardState.at(x, y) == DugType::DugType::undug) {
+                if (probabilityArray[index] == lowest) {
+                    button = static_cast<QPushButton *>(
+                        cellGrid.ref(x, y)->itemAt(0)->widget()); // NOLINT
                     button->setStyleSheet("background: cyan");
                 }
             }
@@ -157,65 +114,57 @@ void SolverWindow::processCalculation()
 
 void SolverWindow::cellSet(int x, int y)
 {
-    QComboBox * menuButton = (QComboBox *)cellGrid[y][x]->itemAt(1)->widget();
+    auto *menuButton = static_cast<QComboBox *>(
+        cellGrid.ref(x, y)->itemAt(1)->widget()); // NOLINT
     QString text = menuButton->currentText();
-    QPushButton * button = (QPushButton *)cellGrid[y][x]->itemAt(0)->widget();
+    auto *button = static_cast<QPushButton *>(
+        cellGrid.ref(x, y)->itemAt(0)->widget()); // NOLINT
 
-    if( text == "Undug")
-    {
+    if (text == "Undug") {
         button->setStyleSheet("background: none");
-        boardState[y][x] = DugType::DugType::undug;
-    }
-    else{
+        boardState.ref(x, y) = DugType::DugType::undug;
+    } else {
         button->setText("");
     }
-    if( text == "Bomb")
-    {
+    if (text == "Bomb") {
         button->setStyleSheet("background: black");
-        boardState[y][x] = DugType::DugType::bomb;
+        boardState.ref(x, y) = DugType::DugType::bomb;
     }
-    if( text == "Rupoor")
-    {
+    if (text == "Rupoor") {
         button->setStyleSheet("background: gray");
-        boardState[y][x] = DugType::DugType::rupoor;
+        boardState.ref(x, y) = DugType::DugType::rupoor;
     }
-    if( text == "Green")
-    {
+    if (text == "Green") {
         button->setStyleSheet("background: green");
-        boardState[y][x] = DugType::DugType::green;
+        boardState.ref(x, y) = DugType::DugType::green;
     }
-    if(text == "Blue")
-    {
+    if (text == "Blue") {
         button->setStyleSheet("background: blue");
-        boardState[y][x] = DugType::DugType::blue;
+        boardState.ref(x, y) = DugType::DugType::blue;
     }
-    if(text == "Red")
-    {
+    if (text == "Red") {
         button->setStyleSheet("background: red");
-        boardState[y][x] = DugType::DugType::red;
+        boardState.ref(x, y) = DugType::DugType::red;
     }
-    if(text == "Silver")
-    {
+    if (text == "Silver") {
         button->setStyleSheet("background: silver");
-        boardState[y][x] = DugType::DugType::silver;
+        boardState.ref(x, y) = DugType::DugType::silver;
     }
-    if(text == "Gold")
-    {
+    if (text == "Gold") {
         button->setStyleSheet("background: gold");
-        boardState[y][x] = DugType::DugType::gold;
+        boardState.ref(x, y) = DugType::DugType::gold;
     }
-    solver.setCell(x, y, boardState[y][x]);
-
-
+    solver.setCell(x, y, boardState.at(x, y));
 }
 
 void SolverWindow::cellOpened(int x, int y, DugType::DugType type)
 {
-    QComboBox * menuButton = (QComboBox *)cellGrid[y][x]->itemAt(1)->widget();
+    auto *menuButton = static_cast<QComboBox *>(
+        cellGrid.ref(x, y)->itemAt(1)->widget()); // NOLINT
     QString text;
-    QPushButton * button = (QPushButton *)cellGrid[y][x]->itemAt(0)->widget();
-    switch(type)
-    {
+    auto *button = static_cast<QPushButton *>(
+        cellGrid.ref(x, y)->itemAt(0)->widget()); // NOLINT
+    switch (type) {
     case DugType::DugType::bomb:
         text = "Bomb";
         button->setStyleSheet("background: black");
@@ -248,10 +197,8 @@ void SolverWindow::cellOpened(int x, int y, DugType::DugType type)
     menuButton->setCurrentText(text);
 }
 
-void SolverWindow::closeEvent(QCloseEvent * e)
+void SolverWindow::closeEvent(QCloseEvent *e)
 {
     emit closing();
     e->accept();
 }
-
-
