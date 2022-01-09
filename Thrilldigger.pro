@@ -26,6 +26,7 @@ SOURCES += src/main.cpp \
     src/benchmark.cpp
 
 HEADERS  += \
+    headers/rupeevalues.h \
     headers/settingswindow.h \
     headers/simulatorwindow.h \
     headers/board.h \
@@ -36,7 +37,8 @@ HEADERS  += \
     headers/constraint.h \
     headers/partition.h \
     headers/partitioniterator.h \
-    headers/benchmark.h
+    headers/benchmark.h \
+    headers/vector2d.h
 
 FORMS    += \
     forms/settingswindow.ui \

@@ -4,7 +4,6 @@
 #include "ui_simulatorwindow.h"
 #include "vector2d.h"
 #include <QMainWindow>
-#include <memory>
 
 class QPushButton;
 class QCloseEvent;
@@ -18,22 +17,20 @@ class SimulatorWindow : public QMainWindow
 public:
     explicit SimulatorWindow(const ProblemParameters &params,
                              QWidget *parent = nullptr);
-    void closeEvent(QCloseEvent *e);
+    void closeEvent(QCloseEvent *e) override;
 
-public slots:
-
-    void cellOpened(int x, int y);
+    void cellOpened(std::size_t x, std::size_t y);
 
 signals:
     void closing();
-    void openedCell(int x, int y, DugType::DugType type);
+    void openedCell(std::size_t x, std::size_t y, DugTypeEnum type);
 
 private:
-    std::unique_ptr<Ui::SimulatorWindow> ui;
-    Vector2d<QPushButton *> cellGrid;
-    int boardWidth;
-    int boardHeight;
-    int rupeeTotal;
+    Ui::SimulatorWindow ui{};
+    std::size_t boardWidth = 0;
+    std::size_t boardHeight = 0;
+    Vector2d<QPushButton *> cellGrid{boardHeight, boardWidth};
+    int rupeeTotal = 0;
     Board board;
 
     void disableAllButtons();

@@ -2,6 +2,6 @@
 #include <vector>
 
 struct Constraint {
-    int maxBadness = 0;
-    std::vector<int> holes;
+    std::size_t maxBadness = 0;
+    std::vector<std::size_t> holes;
 };

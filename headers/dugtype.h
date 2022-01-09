@@ -1,6 +1,6 @@
 #pragma once
 
-namespace DugType
+namespace dugtype
 {
 
 enum DugType : int {
@@ -14,3 +14,5 @@ enum DugType : int {
     gold = 8,
 };
 } // namespace DugType
+
+using DugTypeEnum = dugtype::DugType;

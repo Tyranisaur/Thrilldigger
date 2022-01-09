@@ -8,112 +8,114 @@
 #include "ui_settingswindow.h"
 #include <QCloseEvent>
 
+
+
 SettingsWindow::SettingsWindow(QWidget *parent)
-    : QMainWindow(parent), ui(std::make_unique<Ui::SettingsWindow>())
+    : QMainWindow(parent)
 {
-    ui->setupUi(this);
-    ui->customRadioButton->setChecked(true);
+    ui.setupUi(this);
+    ui.customRadioButton->setChecked(true);
+
+    connect(ui.beginnerRadioButton, &QRadioButton::clicked, [this] {
+        beginnerRadioButton_clicked();
+    });
+    connect(ui.intermediateRadioButton, &QRadioButton::clicked, [this] {
+        intermediateRadioButton_clicked();
+    });
+    connect(ui.expertRadioButton, &QRadioButton::clicked, [this] {
+        expertRadioButton_clicked();
+    });
+    connect(ui.customRadioButton, &QRadioButton::clicked, [this] {
+        customRadioButton_clicked();
+    });
+
+    connect(ui.SimulatorButton, &QPushButton::clicked, [this] {
+        simulatorButton_clicked();
+    });
+    connect(ui.SolverButton, &QPushButton::clicked, [this] {
+        solverButton_clicked();
+    });
+    connect(ui.bothButton, &QPushButton::clicked, [this] {
+        bothButton_clicked();
+    });
+    connect(ui.benchmarkButton, &QPushButton::clicked, [this] {
+        benchmarkButton_clicked();
+    });
 }
 
-void SettingsWindow::on_SimulatorButton_clicked()
+SettingsWindow::~SettingsWindow() = default;
+
+void SettingsWindow::simulatorButton_clicked()
 {
-    ProblemParameters params = {ui->widthSpinner->value(),
-                                ui->heightSpinner->value(),
-                                ui->bombsSpinner->value(),
-                                ui->rupoorsSpinner->value()};
+    const auto params = problemParameters();
     if (params.height * params.width > 0) {
         if (params.height * params.width > params.bombs + params.rupoors) {
             if (simulator != nullptr) {
                 simulator->close();
             }
-            simulator = std::make_unique<SimulatorWindow>(params);
+            simulator = std::make_unique<SimulatorWindow>(params, this);
 
-            connect(simulator.get(),
-                    SIGNAL(closing()),
-                    this,
-                    SLOT(simWindowDestroyed()));
+            connect(simulator.get(), &SimulatorWindow::closing, [this] {
+                simWindowDestroyed();
+            });
 
             simulator->show();
         }
     }
 }
 
-void SettingsWindow::on_SolverButton_clicked()
+void SettingsWindow::solverButton_clicked()
 {
-    ProblemParameters params = {ui->widthSpinner->value(),
-                                ui->heightSpinner->value(),
-                                ui->bombsSpinner->value(),
-                                ui->rupoorsSpinner->value()};
-    if (params.height * params.width > 0) {
+    const auto params = problemParameters();
+    if (params.height > 0 && params.width > 0) {
         if (params.height * params.width > params.bombs + params.rupoors) {
             if (solver != nullptr) {
                 solver->close();
             }
-            solver = std::make_unique<SolverWindow>(params);
+            solver = std::make_unique<SolverWindow>(params, this);
 
-            connect(solver.get(),
-                    SIGNAL(closing()),
-                    this,
-                    SLOT(solverWindowDestroyed()));
+            connect(solver.get(), &SolverWindow::closing, [this] {
+                solverWindowDestroyed();
+            });
 
             solver->show();
         }
     }
 }
 
-void SettingsWindow::on_beginnerRadioButton_clicked()
+void SettingsWindow::beginnerRadioButton_clicked()
 {
-    ui->widthSpinner->setValue(5);
-    ui->widthSpinner->setEnabled(false);
-    ui->heightSpinner->setValue(4);
-    ui->heightSpinner->setEnabled(false);
-    ui->bombsSpinner->setValue(4);
-    ui->bombsSpinner->setEnabled(false);
-    ui->rupoorsSpinner->setValue(0);
-    ui->rupoorsSpinner->setEnabled(false);
+    setParameterSpinners(difficulty::Difficulty::BEGINNER);
 }
 
-void SettingsWindow::on_intermediateRadioButton_clicked()
+void SettingsWindow::intermediateRadioButton_clicked()
 {
-    ui->widthSpinner->setValue(6);
-    ui->widthSpinner->setEnabled(false);
-    ui->heightSpinner->setValue(5);
-    ui->heightSpinner->setEnabled(false);
-    ui->bombsSpinner->setValue(4);
-    ui->bombsSpinner->setEnabled(false);
-    ui->rupoorsSpinner->setValue(4);
-    ui->rupoorsSpinner->setEnabled(false);
+    setParameterSpinners(difficulty::Difficulty::INTERMEDIATE);
 }
 
-void SettingsWindow::on_expertRadioButton_clicked()
+void SettingsWindow::expertRadioButton_clicked()
 {
-    ui->widthSpinner->setValue(8);
-    ui->widthSpinner->setEnabled(false);
-    ui->heightSpinner->setValue(5);
-    ui->heightSpinner->setEnabled(false);
-    ui->bombsSpinner->setValue(8);
-    ui->bombsSpinner->setEnabled(false);
-    ui->rupoorsSpinner->setValue(8);
-    ui->rupoorsSpinner->setEnabled(false);
+    setParameterSpinners(difficulty::Difficulty::EXPERT);
 }
 
-void SettingsWindow::on_customRadioButton_clicked()
+void SettingsWindow::customRadioButton_clicked()
 {
-    ui->widthSpinner->setEnabled(true);
-    ui->heightSpinner->setEnabled(true);
-    ui->bombsSpinner->setEnabled(true);
-    ui->rupoorsSpinner->setEnabled(true);
+    ui.widthSpinner->setEnabled(true);
+    ui.heightSpinner->setEnabled(true);
+    ui.bombsSpinner->setEnabled(true);
+    ui.rupoorsSpinner->setEnabled(true);
 }
 
 void SettingsWindow::simWindowDestroyed()
 {
-    simulator = nullptr;
+    simulator.release();
 }
 
 void SettingsWindow::solverWindowDestroyed()
 {
-    solver = nullptr;
+    solver.release();
 }
+
 void SettingsWindow::closeEvent(QCloseEvent *e)
 {
     if (simulator != nullptr) {
@@ -125,41 +127,33 @@ void SettingsWindow::closeEvent(QCloseEvent *e)
     e->accept();
 }
 
-void SettingsWindow::on_bothButton_clicked()
+void SettingsWindow::bothButton_clicked()
 {
-    ProblemParameters params = {ui->widthSpinner->value(),
-                                ui->heightSpinner->value(),
-                                ui->bombsSpinner->value(),
-                                ui->rupoorsSpinner->value()};
-    if (params.height * params.width > 0) {
+    const auto params = problemParameters();
+    if (params.height > 0 && params.width > 0) {
         if (params.height * params.width > params.bombs + params.rupoors) {
-            solver = std::make_unique<SolverWindow>(params);
-            simulator = std::make_unique<SimulatorWindow>(params);
+            solver = std::make_unique<SolverWindow>(params, this);
+            simulator = std::make_unique<SimulatorWindow>(params, this);
+
+            connect(simulator.get(), &SimulatorWindow::closing, this, [this] {
+                simWindowDestroyed();
+                if (solver) {
+                    solver->close();
+                }
+            });
+
+            connect(solver.get(), &SolverWindow::closing, this, [this] {
+                solverWindowDestroyed();
+                if (simulator) {
+                    simulator->close();
+                }
+            });
 
             connect(simulator.get(),
-                    SIGNAL(closing()),
-                    this,
-                    SLOT(simWindowDestroyed()));
-
-            connect(solver.get(),
-                    SIGNAL(closing()),
-                    this,
-                    SLOT(solverWindowDestroyed()));
-
-            connect(simulator.get(),
-                    SIGNAL(openedCell(int, int, DugType::DugType)),
-                    solver.get(),
-                    SLOT(cellOpened(int, int, DugType::DugType)));
-
-            connect(solver.get(),
-                    SIGNAL(destroyed(QObject *)),
-                    simulator.get(),
-                    SLOT(close()));
-
-            connect(simulator.get(),
-                    SIGNAL(destroyed(QObject *)),
-                    solver.get(),
-                    SLOT(close()));
+                    &SimulatorWindow::openedCell,
+                    [solver = solver.get()](const std::size_t x, const std::size_t y, const DugTypeEnum type) {
+                        solver->cellOpened(x, y, type);
+                    });
 
             simulator->show();
             solver->show();
@@ -167,30 +161,51 @@ void SettingsWindow::on_bothButton_clicked()
     }
 }
 
-void SettingsWindow::on_benchmarkButton_clicked()
+void SettingsWindow::benchmarkButton_clicked()
 {
-    auto params = ProblemParameters{ui->widthSpinner->value(),
-                                    ui->heightSpinner->value(),
-                                    ui->bombsSpinner->value(),
-                                    ui->rupoorsSpinner->value()};
-    if (params.height * params.width > 0 &&
+    const auto params = problemParameters();
+    if (params.height > 0 && params.width > 0 &&
         params.height * params.width > params.bombs + params.rupoors) {
-        ui->SimulatorButton->setEnabled(false);
-        ui->SolverButton->setEnabled(false);
-        ui->bothButton->setEnabled(false);
-        ui->benchmarkButton->setEnabled(false);
+        ui.SimulatorButton->setEnabled(false);
+        ui.SolverButton->setEnabled(false);
+        ui.bothButton->setEnabled(false);
+        ui.benchmarkButton->setEnabled(false);
 
         benchmark = std::make_unique<Benchmark>(params);
-        connect(benchmark.get(), SIGNAL(done()), this, SLOT(benchmarkDone()));
+        connect(benchmark.get(), &Benchmark::done, [this]{benchmarkDone();});
         benchmark->start();
     }
 }
 
 void SettingsWindow::benchmarkDone()
 {
-    ui->SimulatorButton->setEnabled(true);
-    ui->SolverButton->setEnabled(true);
-    ui->bothButton->setEnabled(true);
-    ui->benchmarkButton->setEnabled(true);
+    ui.SimulatorButton->setEnabled(true);
+    ui.SolverButton->setEnabled(true);
+    ui.bothButton->setEnabled(true);
+    ui.bothButton->setEnabled(true);
+    ui.benchmarkButton->setEnabled(true);
     benchmark = nullptr;
+}
+
+ProblemParameters SettingsWindow::problemParameters()
+{
+    return ProblemParameters{std::size_t(ui.widthSpinner->value()),
+                                    std::size_t(ui.heightSpinner->value()),
+                                    std::size_t(ui.bombsSpinner->value()),
+                                    std::size_t(ui.rupoorsSpinner->value())};
+}
+
+void SettingsWindow::setParameterSpinners(const difficulty::Difficulty difficultyLevel)
+{
+    const ProblemParameters params =
+        difficulty::difficultyParameters(difficultyLevel);
+
+    ui.widthSpinner->setValue(int(params.width));
+    ui.widthSpinner->setEnabled(false);
+    ui.heightSpinner->setValue(int(params.height));
+    ui.heightSpinner->setEnabled(false);
+    ui.bombsSpinner->setValue(int(params.bombs));
+    ui.bombsSpinner->setEnabled(false);
+    ui.rupoorsSpinner->setValue(int(params.rupoors));
+    ui.rupoorsSpinner->setEnabled(false);
 }

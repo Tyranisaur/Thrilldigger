@@ -144,7 +144,13 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="vector2d.h">
+    <ClInclude Include="headers\vector2d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\rupeevalues.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\difficulty.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

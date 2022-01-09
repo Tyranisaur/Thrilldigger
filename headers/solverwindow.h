@@ -4,16 +4,12 @@
 #include "ui_solverwindow.h"
 #include "vector2d.h"
 #include <QMainWindow>
-#include <qmovie.h>
-#include <qthread.h>
-
-namespace DugType
-{
-enum DugType : int;
-}
+#include <QMovie>
+#include <QThread>
 
 class QVBoxLayout;
 class QCloseEvent;
+class QComboBox;
 
 struct ProblemParameters;
 
@@ -26,24 +22,27 @@ public:
                           QWidget *parent = nullptr);
     void closeEvent(QCloseEvent *e);
 
-private slots:
-    void on_calculateButton_clicked();
-    void processCalculation();
-    void cellSet(int x, int y);
-    void cellOpened(int x, int y, DugType::DugType type);
+    void cellOpened(std::size_t x, std::size_t y, DugTypeEnum type);
 
 signals:
     void closing();
 
 private:
-    std::unique_ptr<Ui::SolverWindow> ui;
-    Vector2d<QVBoxLayout *> cellGrid;
-    std::unique_ptr<QMovie> movie;
-    Vector2d<DugType::DugType> boardState;
+    Ui::SolverWindow ui{};
+    std::size_t boardWidth = 0;
+    std::size_t boardHeight = 0;
+    std::size_t numHoles = boardWidth * boardHeight;
+    Vector2d<QVBoxLayout *> cellGrid{boardHeight, boardWidth};
+    Vector2d<DugTypeEnum> boardState{boardHeight, boardWidth, dugtype::undug};
     Solver solver;
-    std::unique_ptr<QThread> thread;
+    QMovie movie;
+    QThread thread;
     const std::vector<double> &probabilityArray;
-    int boardWidth;
-    int boardHeight;
-    int numHoles;
+
+    QPushButton *getButton(std::size_t x, std::size_t y);
+    QComboBox *getMenu(std::size_t x, std::size_t y);
+
+    void calculateButton_clicked();
+    void processCalculation();
+    void cellSet(std::size_t x, std::size_t y);
 };

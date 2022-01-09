@@ -1,8 +1,10 @@
 #pragma once
 
+#include <cstddef>
+
 struct ProblemParameters {
-    const int width = 0;
-    const int height = 0;
-    const int bombs = 0;
-    const int rupoors = 0;
+    const std::size_t width = 0;
+    const std::size_t height = 0;
+    const std::size_t bombs = 0;
+    const std::size_t rupoors = 0;
 };

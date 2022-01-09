@@ -9,20 +9,19 @@ public:
     PartitionIterator(std::vector<Partition *> *partitionList,
                       std::vector<bool> &badspots,
                       std::vector<Partition *> *sunkenPartitions,
-                      int numBadSpots);
+                      std::size_t numBadSpots);
 
-    bool hasNext();
-    double iterate();
+    bool goToNextState();
+    double stateWeight() const;
 
 private:
-    double choose(int n, int k);
-    std::vector<Partition *> &partitionList;
-    double weight;
-    std::vector<int> indexArray;
-    int indexArrayLength;
-    int listLength;
-    bool started;
-    std::vector<int> maxAmountsPerPartition;
-    std::vector<int> minAmountsPerPartition;
-    std::vector<bool> &badSpots;
+    std::vector<Partition *> &partitionList_;
+    double weight_ = 1.0;
+    std::vector<std::size_t> indexArray_;
+    std::size_t indexArrayLength_;
+    std::size_t listLength_;
+    bool started_ = false;
+    std::vector<std::size_t> maxAmountsPerPartition_;
+    std::vector<std::size_t> minAmountsPerPartition_;
+    std::vector<bool> &badSpots_;
 };

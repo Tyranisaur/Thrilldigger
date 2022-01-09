@@ -8,56 +8,62 @@
 #include <QSetIterator>
 #include <iostream>
 
-Solver::Solver(const ProblemParameters &params)
-    : params_(params),
-      numHoles(params_.width * params_.height),
-      probabilities(numHoles, 0.0),
-      constraints(numHoles),
-      partitions(numHoles),
-      badSpots(numHoles, false),
-      imposingConstraints(numHoles),
-      board(numHoles, DugType::undug)
+Solver::Solver(const ProblemParameters &params) : params_(params)
 {
 
-    for (int i = 0; i < numHoles; i++) {
+    for (std::size_t i = 0; i != numHoles; ++i)
+    {
 
         unconstrainedUnopenedHoles.insert(i);
-        constraints[i].maxBadness = -1;
+        constraints[i].maxBadness = std::numeric_limits<std::size_t>::max();
     }
     std::cout << "True number of configurations\tTotal iterations\tLegal "
               << "iterations\tPartitions\tSunken Partitions\tConstrained holes"
               << std::endl;
 }
 
-void Solver::setCell(int x, int y, DugType::DugType type)
+Solver::~Solver() = default;
+
+void Solver::setCell(std::size_t x, std::size_t y, DugTypeEnum type)
 {
 
-    int index = y * params_.width + x;
-    int filterIndex;
-    if (board[index] != DugType::DugType::undug && board[index] != type) {
-        board[index] = DugType::DugType::undug;
+    const std::size_t index = y * params_.width + x;
+    if (board[index] != dugtype::undug && board[index] != type)
+    {
+        board[index] = dugtype::undug;
         resetBoard();
     }
     board[index] = type;
-    if (type >= 0) {
+    if (type >= 0)
+    {
         Constraint *constraint = &constraints[index];
-        constraint->maxBadness = type;
+        constraint->maxBadness = std::size_t(type);
 
-        for (int filterY = y - 1; filterY < y + 2; filterY++) {
-            if (filterY >= 0 && filterY < params_.height) {
-                for (int filterX = x - 1; filterX < x + 2; filterX++) {
-                    if (filterX >= 0 && filterX < params_.width) {
-                        if (filterX != x || filterY != y) {
-                            filterIndex = filterY * params_.width + filterX;
-                            if (knownBadSpots.count(filterIndex)) {
+        for (int filterY = int(y) - 1; filterY < int(y) + 2; filterY++)
+        {
+            if (filterY >= 0 && std::size_t(filterY) < params_.height)
+            {
+                for (int filterX = int(x) - 1; filterX < int(x) + 2; filterX++)
+                {
+                    if (filterX >= 0 && std::size_t(filterX) < params_.width)
+                    {
+                        if (filterX != int(x) || filterY != int(y))
+                        {
+                            const std::size_t filterIndex =
+                                std::size_t(filterY) * params_.width +
+                                std::size_t(filterX);
+                            if (knownBadSpots.count(filterIndex) > 0)
+                            {
                                 constraint->maxBadness--;
-                            } else if (board[filterIndex] ==
-                                       DugType::DugType::undug) {
+                            }
+                            else if (board[filterIndex] == dugtype::undug)
+                            {
 
                                 imposingConstraints[filterIndex].insert(
                                     constraint);
 
-                                if (!knownSafeSpots.count(filterIndex)) {
+                                if (knownSafeSpots.count(filterIndex) == 0)
+                                {
                                     constraint->holes.push_back(filterIndex);
                                     constrainedUnopenedHoles.insert(
                                         filterIndex);
@@ -70,15 +76,20 @@ void Solver::setCell(int x, int y, DugType::DugType type)
             }
         }
         setKnownSafeSpot(index);
-        if (constraint->maxBadness > 0) {
+        if (constraint->maxBadness > 0)
+        {
             constraintList.push_back(constraint);
         }
-        if (constraint->maxBadness == 0) {
-            for (int hole : constraint->holes) {
+        if (constraint->maxBadness == 0)
+        {
+            for (const std::size_t hole : constraint->holes)
+            {
                 setKnownSafeSpot(hole);
             }
         }
-    } else if (type >= -2) {
+    }
+    else if (type >= -2)
+    {
         setKnownBadSpot(index);
     }
 }
@@ -92,20 +103,23 @@ void Solver::resetBoard()
     knownBadSpots.clear();
     knownSafeSpots.clear();
     std::fill(badSpots.begin(), badSpots.end(), false);
-    for (int i = 0; i < numHoles; i++) {
 
-        constraints[i].maxBadness = -1;
+    for (std::size_t i = 0; i != numHoles; ++i)
+    {
+
+        constraints[i].maxBadness = std::numeric_limits<std::size_t>::max();
         constraints[i].holes.clear();
         unconstrainedUnopenedHoles.insert(i);
         imposingConstraints[i].clear();
     }
-    int x;
-    int y;
-    for (int i = 0; i < numHoles; i++) {
 
-        if (board[i] != DugType::DugType::undug) {
-            x = i % params_.width;
-            y = i / params_.width;
+    for (std::size_t i = 0; i != numHoles; ++i)
+    {
+
+        if (board[i] != dugtype::undug)
+        {
+            const std::size_t x = i % params_.width;
+            const std::size_t y = i / params_.width;
             setCell(x, y, board[i]);
         }
     }
@@ -118,15 +132,15 @@ void Solver::reload()
     unconstrainedUnopenedHoles.clear();
     knownBadSpots.clear();
     knownSafeSpots.clear();
-    for (int i = 0; i < numHoles; i++) {
-
-        constraints[i].maxBadness = -1;
+    for (std::size_t i = 0; i != numHoles; ++i)
+    {
+        constraints[i].maxBadness = std::numeric_limits<std::size_t>::max();
         constraints[i].holes.clear();
         unconstrainedUnopenedHoles.insert(i);
         imposingConstraints[i].clear();
     }
     std::fill(badSpots.begin(), badSpots.end(), false);
-    std::fill(board.begin(), board.end(), DugType::DugType::undug);
+    std::fill(board.begin(), board.end(), dugtype::undug);
 }
 
 void Solver::partitionCalculate()
@@ -136,62 +150,78 @@ void Solver::partitionCalculate()
                          badSpots,
                          &sunkenPartitions,
                          params_.bombs + params_.rupoors -
-                             int(knownBadSpots.size()));
+                             knownBadSpots.size());
 
     bombsAmongConstrainedHoles = params_.bombs + params_.rupoors;
-    double configurationWeight;
     totalWeight = 0.0;
-    double probability;
-    for (int i = 0; i < numHoles; i++) {
 
-        if (constrainedUnopenedHoles.count(i) ||
-            unconstrainedUnopenedHoles.count(i)) {
+    for (std::size_t i = 0; i != numHoles; i++)
+    {
+
+        if (constrainedUnopenedHoles.count(i) > 0 ||
+            unconstrainedUnopenedHoles.count(i) > 0)
+        {
             probabilities[i] = 0.0;
         }
     }
     totalIterations = 0;
     legalIterations = 0;
-    do {
-        configurationWeight = it.iterate();
+    do
+    {
+        const double configurationWeight = it.stateWeight();
         totalIterations++;
-        if (!validateBoard()) {
+        if (!validateBoard())
+        {
             continue;
         }
         legalIterations++;
 
         totalWeight += configurationWeight;
 
-        for (auto i : partitionList) {
-            probability =
-                configurationWeight * i->badness / double(i->holes.size());
-            for (int hole : i->holes) {
+        for (Partition *partion : partitionList)
+        {
+            const double probability = configurationWeight *
+                                       double(partion->badness) /
+                                       double(partion->holes.size());
+            for (const std::size_t hole : partion->holes)
+            {
                 probabilities[hole] += probability;
             }
         }
 
-    } while (it.hasNext());
+    } while (it.goToNextState());
 
-    for (auto sunkenPartition : sunkenPartitions) {
-        probability = totalWeight * sunkenPartition->badness /
-                      double(sunkenPartition->holes.size());
-        for (int hole: sunkenPartition->holes) {
+    for (Partition *sunkenPartition : sunkenPartitions)
+    {
+        const double probability = totalWeight *
+                                   double(sunkenPartition->badness) /
+                                   double(sunkenPartition->holes.size());
+        for (const std::size_t hole : sunkenPartition->holes)
+        {
             probabilities[hole] += probability;
         }
     }
-    numConstrained = int(constrainedUnopenedHoles.size());
+    numConstrained = constrainedUnopenedHoles.size();
     std::cout << totalWeight << "\t" << totalIterations << "\t"
               << legalIterations << "\t"
               << partitionList.size() + sunkenPartitions.size() << "\t"
               << sunkenPartitions.size() << "\t"
               << constrainedUnopenedHoles.size() << std::endl;
-    for (int i = 0; i < numHoles; i++) {
-        if (constrainedUnopenedHoles.count(i) ||
-            unconstrainedUnopenedHoles.count(i)) {
-            if (probabilities[i] == totalWeight) {
+    for (std::size_t i = 0; i != numHoles; ++i)
+    {
+        if (constrainedUnopenedHoles.count(i) > 0 ||
+            unconstrainedUnopenedHoles.count(i) > 0)
+        {
+            if (probabilities[i] == totalWeight)
+            {
                 setKnownBadSpot(i);
-            } else if (probabilities[i] == 0.0) {
+            }
+            else if (probabilities[i] == 0.0)
+            {
                 setKnownSafeSpot(i);
-            } else {
+            }
+            else
+            {
                 badSpots[i] = false;
                 probabilities[i] /= totalWeight;
             }
@@ -206,70 +236,72 @@ const std::vector<double> &Solver::getProbabilityArray() const
     return probabilities;
 }
 
-bool Solver::validateBoard()
+bool Solver::validateBoard() const
 {
-    if (bombsAmongConstrainedHoles > params_.bombs + params_.rupoors) {
+    if (bombsAmongConstrainedHoles > params_.bombs + params_.rupoors)
+    {
         return false;
     }
-    if (int(unconstrainedUnopenedHoles.size()) + bombsAmongConstrainedHoles <
-        params_.bombs + params_.rupoors) {
+    if (unconstrainedUnopenedHoles.size() + bombsAmongConstrainedHoles <
+        params_.bombs + params_.rupoors)
+    {
         return false;
     }
-    for (Constraint *constraint : constraintList) {
-        int badSpotsSeen = 0;
-        for (int constrainedHole : constraint->holes) {
-            if (badSpots[constrainedHole]) {
+    for (Constraint *constraint : constraintList)
+    {
+        std::size_t badSpotsSeen = 0;
+        for (std::size_t constrainedHole : constraint->holes)
+        {
+            if (badSpots[constrainedHole])
+            {
                 badSpotsSeen++;
             }
         }
         if (badSpotsSeen != constraint->maxBadness &&
-            badSpotsSeen + 1 != constraint->maxBadness) {
+            badSpotsSeen + 1 != constraint->maxBadness)
+        {
             return false;
         }
     }
     return true;
 }
 
-double Solver::choose(uint64_t n, uint64_t k)
-{
-    if (k > n) {
-        return 0.0;
-    }
-    double r = 1.0;
-    for (uint64_t d = 1; d <= k; ++d) {
-        r *= n--;
-        r /= d;
-    }
-    return r;
-}
-
-void Solver::setKnownBadSpot(int index)
+void Solver::setKnownBadSpot(const std::size_t index)
 {
     knownBadSpots.insert(index);
     badSpots[index] = true;
     probabilities[index] = 1.0;
     constrainedUnopenedHoles.erase(index);
     unconstrainedUnopenedHoles.erase(index);
-    const int y = index / params_.width;
-    const int x = index % params_.width;
-    for (int filterY = y - 1; filterY < y + 2; filterY++) {
-        if (filterY >= 0 && filterY < params_.height) {
-            for (int filterX = x - 1; filterX < x + 2; filterX++) {
-                if ((filterX >= 0 && filterX < params_.width) &&
-                    (filterX != x || filterY != y)) {
-                    const int filterIndex = filterY * params_.width + filterX;
-                    if (board[filterIndex] > 0) {
+    const std::size_t y = index / params_.width;
+    const std::size_t x = index % params_.width;
+    for (int filterY = int(y) - 1; filterY < int(y) + 2; filterY++)
+    {
+        if (filterY >= 0 && std::size_t(filterY) < params_.height)
+        {
+            for (int filterX = int(x) - 1; filterX < int(x) + 2; filterX++)
+            {
+                if ((filterX >= 0 && std::size_t(filterX) < params_.width) &&
+                    (std::size_t(filterX) != x || std::size_t(filterY) != y))
+                {
+                    const std::size_t filterIndex =
+                        std::size_t(filterY) * params_.width +
+                        std::size_t(filterX);
+                    if (board[filterIndex] > 0)
+                    {
                         Constraint *constraint = &constraints[filterIndex];
                         auto it = std::find(constraint->holes.begin(),
                                             constraint->holes.end(),
                                             index);
-                        if (constraint->maxBadness != -1 &&
-                            it != constraint->holes.end()) {
+                        if (it != constraint->holes.end())
+                        {
                             constraint->holes.erase(it);
                             constraint->maxBadness--;
-                            if (constraint->maxBadness == 0) {
-                                while (!constraint->holes.empty()) {
-                                    const int constrainedHole =
+                            if (constraint->maxBadness == 0)
+                            {
+                                while (!constraint->holes.empty())
+                                {
+                                    const std::size_t constrainedHole =
                                         constraint->holes.back();
                                     constraint->holes.pop_back();
                                     setKnownSafeSpot(constrainedHole);
@@ -280,11 +312,12 @@ void Solver::setKnownBadSpot(int index)
                                                 constraintList.end(),
                                                 constraint),
                                     constraintList.end());
-
-                            } else if (constraint->holes.size() == 1 &&
-                                       constraint->maxBadness == 1) {
-                                const int unimportantHole =
-                                    constraint->holes.at(0);
+                            }
+                            else if (constraint->holes.size() == 1 &&
+                                     constraint->maxBadness == 1)
+                            {
+                                const std::size_t unimportantHole =
+                                    constraint->holes.front();
                                 imposingConstraints[unimportantHole].erase(
                                     constraint);
                                 constraintList.erase(
@@ -293,7 +326,8 @@ void Solver::setKnownBadSpot(int index)
                                                 constraint),
                                     constraintList.end());
                                 if (imposingConstraints[unimportantHole]
-                                        .empty()) {
+                                        .empty())
+                                {
                                     constrainedUnopenedHoles.erase(
                                         unimportantHole);
                                     unconstrainedUnopenedHoles.insert(
@@ -308,50 +342,60 @@ void Solver::setKnownBadSpot(int index)
     }
 }
 
-void Solver::setKnownSafeSpot(int index)
+void Solver::setKnownSafeSpot(const std::size_t index)
 {
     knownSafeSpots.insert(index);
     constrainedUnopenedHoles.erase(index);
     unconstrainedUnopenedHoles.erase(index);
     probabilities[index] = 0.0;
     badSpots[index] = false;
-    Constraint *constraint;
-    int constrainedHole;
-    int filterIndex;
-    int unimportantHole;
-    int y = index / params_.width;
-    int x = index % params_.width;
-    for (int filterY = y - 1; filterY < y + 2; filterY++) {
-        if (filterY >= 0 && filterY < params_.height) {
-            for (int filterX = x - 1; filterX < x + 2; filterX++) {
-                if ((filterX >= 0 && filterX < params_.width) &&
-                    (filterX != x || filterY != y)) {
-                    filterIndex = filterY * params_.width + filterX;
-                    if (board[filterIndex] > 0) {
-                        constraint = &constraints[filterIndex];
+    const std::size_t y = index / params_.width;
+    const std::size_t x = index % params_.width;
+    for (int filterY = int(y) - 1; filterY < int(y) + 2; filterY++)
+    {
+        if (filterY >= 0 && std::size_t(filterY) < params_.height)
+        {
+            for (int filterX = int(x) - 1; filterX < int(x) + 2; filterX++)
+            {
+                if ((filterX >= 0 && std::size_t(filterX) < params_.width) &&
+                    (std::size_t(filterX) != x || std::size_t(filterY) != y))
+                {
+                    const std::size_t filterIndex =
+                        std::size_t(filterY) * params_.width +
+                        std::size_t(filterX);
+                    if (board[filterIndex] > 0)
+                    {
+                        Constraint *constraint = &constraints[filterIndex];
                         auto constrainedHoleIt =
                             std::find(constraint->holes.begin(),
                                       constraint->holes.end(),
                                       index);
-                        if (constraint->maxBadness != -1 &&
-                            constrainedHoleIt != constraint->holes.end()) {
+                        if (constrainedHoleIt != constraint->holes.end())
+                        {
                             constraint->holes.erase(constrainedHoleIt);
                             if (constraint->maxBadness - 1 ==
-                                int(constraint->holes.size())) {
-                                while (!constraint->holes.empty()) {
-                                    constrainedHole = constraint->holes.back();
+                                constraint->holes.size())
+                            {
+                                while (!constraint->holes.empty())
+                                {
+                                    const std::size_t constrainedHole =
+                                        constraint->holes.back();
                                     constraint->holes.pop_back();
                                     setKnownBadSpot(constrainedHole);
                                 }
                                 auto it = std::find(constraintList.begin(),
                                                     constraintList.end(),
                                                     constraint);
-                                if (it != constraintList.end()) {
+                                if (it != constraintList.end())
+                                {
                                     constraintList.erase(it);
                                 }
-                            } else if (constraint->holes.size() == 1 &&
-                                       constraint->maxBadness == 1) {
-                                unimportantHole = constraint->holes.back();
+                            }
+                            else if (constraint->holes.size() == 1 &&
+                                     constraint->maxBadness == 1)
+                            {
+                                const std::size_t unimportantHole =
+                                    constraint->holes.back();
                                 constraint->holes.pop_back();
                                 imposingConstraints[unimportantHole].erase(
                                     constraint);
@@ -359,12 +403,13 @@ void Solver::setKnownSafeSpot(int index)
                                     std::find(constraintList.begin(),
                                               constraintList.end(),
                                               constraint);
-                                if (trivialConstraintIt !=
-                                    constraintList.end()) {
+                                if (trivialConstraintIt != constraintList.end())
+                                {
                                     constraintList.erase(trivialConstraintIt);
                                 }
                                 if (imposingConstraints[unimportantHole]
-                                        .empty()) {
+                                        .empty())
+                                {
                                     constrainedUnopenedHoles.erase(
                                         unimportantHole);
                                     unconstrainedUnopenedHoles.insert(
@@ -384,58 +429,61 @@ void Solver::generatePartitions()
 
     sunkenPartitions.clear();
     partitionList.clear();
-    Partition *partition;
-    bool present;
-    int numpartitions = 0;
-    for (int constrainedHole : constrainedUnopenedHoles) {
-        partition = &partitions[numpartitions];
+    std::size_t numpartitions = 0;
+    for (const std::size_t constrainedHole : constrainedUnopenedHoles)
+    {
+        Partition *partition = &partitions[numpartitions];
         partition->constraints = imposingConstraints[constrainedHole];
         partition->holes.clear();
-        present = false;
-        for (auto i : partitionList) {
-            if (*i == *partition) {
+        bool present = false;
+        for (Partition *preExistingParition : partitionList)
+        {
+            if (*preExistingParition == *partition)
+            {
 
-                partition = i;
+                partition = preExistingParition;
                 present = true;
                 break;
             }
         }
         partition->holes.push_back(constrainedHole);
 
-        if (!present) {
+        if (!present)
+        {
             partitionList.push_back(partition);
             numpartitions++;
         }
     }
-    if (!unconstrainedUnopenedHoles.empty()) {
-        partition = &partitions[numpartitions];
-        partition->constraints = Solver::emptySet;
+    if (!unconstrainedUnopenedHoles.empty())
+    {
+        Partition *partition = &partitions[numpartitions];
+        partition->constraints.clear();
         partition->holes = {unconstrainedUnopenedHoles.begin(),
                             unconstrainedUnopenedHoles.end()};
         partitionList.insert(partitionList.begin(), partition);
     }
 }
-int Solver::getConstrainedHoles()
+std::size_t Solver::getConstrainedHoles() const
 {
     return numConstrained;
 }
 
-double Solver::getTotalNumConfigurations()
+double Solver::getTotalNumConfigurations() const
 {
     return totalWeight;
 }
 
-uint64_t Solver::getIterations()
+std::uint64_t Solver::getIterations() const
 {
     return totalIterations;
 }
 
-int Solver::getLegalIterations()
+std::size_t Solver::getLegalIterations() const
 {
     return legalIterations;
 }
 
-int Solver::getPartitions()
+std::size_t Solver::getPartitions() const
 {
-    return int(partitionList.size() + sunkenPartitions.size());
+    return partitionList.size() + sunkenPartitions.size();
 }

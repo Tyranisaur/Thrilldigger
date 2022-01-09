@@ -1,162 +1,120 @@
 #include "headers/board.h"
 
 #include "headers/problemparameters.h"
+
+#include <algorithm>
+#include <array>
+#include <functional>
+#include <numeric>
 #include <random>
+
+namespace
+{
+std::mt19937 rng()
+{
+    std::random_device dev;
+    std::array<std::seed_seq::result_type, std::mt19937::state_size> data{};
+    std::generate(data.begin(), data.end(), std::ref(dev));
+
+    std::seed_seq prng_seed(data.begin(), data.end());
+
+    return std::mt19937(prng_seed);
+}
+
+std::size_t badSpotsAround(const std::size_t x,
+                           const std::size_t y,
+                           const Vector2d<DugTypeEnum> &boardRep)
+{
+    std::size_t badspots = 0;
+    for (int filterY = int(y) - 1; filterY < int(y) + 2; filterY++) {
+        if (filterY >= 0 && std::size_t(filterY) < boardRep.height()) {
+            for (int filterX = int(x) - 1; filterX < int(x) + 2; filterX++) {
+                if (filterX >= 0 && std::size_t(filterX) < boardRep.width()) {
+                    if (filterX != int(x) || filterY != int(y)) {
+                        if (boardRep.at(std::size_t(filterX), std::size_t(filterY)) < 0) {
+                            badspots++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return badspots;
+}
+}
+
 
 Board::Board(const ProblemParameters &params)
     : problemParams_(params),
       opened_(params.height, params.width),
       boardRep_(params.height, params.width)
 {
-    int holes = params.height * params.width;
-    for (int y = 0; y < params.height; y++) {
-        for (int x = 0; x < params.width; x++) {
-            opened_.set(x, y, false);
-            boardRep_.ref(x, y) = DugType::DugType::green;
-        }
-    }
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dist(0, holes - 1);
-    for (int b = 0; b < params.bombs; b++) {
-        int index = dist(rng);
-        int x = index % params.width;
-        int y = index / params.width;
-
-        if (boardRep_.at(x, y) == DugType::DugType::bomb) {
-            b--;
-            continue;
-        }
-        boardRep_.ref(x, y) = DugType::DugType::bomb;
-    }
-    for (int r = 0; r < params.rupoors; r++) {
-        int index = dist(rng);
-        int x = index % params.width;
-        int y = index / params.width;
-
-        if (boardRep_.at(x, y) != DugType::DugType::green) {
-            r--;
-            continue;
-        }
-        boardRep_.ref(x, y) = DugType::DugType::rupoor;
-    }
-
-    for (int y = 0; y < params.height; y++) {
-        for (int x = 0; x < params.width; x++) {
-            if (boardRep_.at(x, y) == DugType::DugType::green) {
-                int badspots = 0;
-                for (int filterY = y - 1; filterY < y + 2; filterY++) {
-                    if (filterY >= 0 && filterY < params.height) {
-                        for (int filterX = x - 1; filterX < x + 2; filterX++) {
-                            if (filterX >= 0 && filterX < params.width) {
-                                if (filterX != x || filterY != y) {
-                                    if (boardRep_.at(filterX, filterY) < 0) {
-                                        badspots++;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                switch (badspots) {
-                case 0:
-                    boardRep_.ref(x, y) = DugType::DugType::green;
-                    break;
-                case 1:
-                case 2:
-                    boardRep_.ref(x, y) = DugType::DugType::blue;
-                    break;
-                case 3:
-                case 4:
-                    boardRep_.ref(x, y) = DugType::DugType::red;
-                    break;
-                case 5:
-                case 6:
-                    boardRep_.ref(x, y) = DugType::DugType::silver;
-                    break;
-                case 7:
-                case 8:
-                    boardRep_.ref(x, y) = DugType::DugType::gold;
-                    break;
-                }
-            }
-        }
-    }
+    reload();
 }
 
 void Board::reload() &
 {
-    for (int y = 0; y < problemParams_.height; y++) {
-        for (int x = 0; x < problemParams_.width; x++) {
-            opened_.set(x, y, false);
-            boardRep_.ref(x, y) = DugType::DugType::green;
-        }
-    }
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dist(
-        0, problemParams_.height * problemParams_.width - 1);
-    for (int b = 0; b < problemParams_.bombs; b++) {
-        int index = dist(rng);
-        int x = index % problemParams_.width;
-        int y = index / problemParams_.width;
+    opened_.reset(false);
+    boardRep_.reset(dugtype::green);
 
-        if (boardRep_.at(x, y) == DugType::DugType::bomb) {
-            b--;
-            continue;
-        }
-        boardRep_.ref(x, y) = DugType::DugType::bomb;
-    }
-    for (int r = 0; r < problemParams_.rupoors; r++) {
-        int index = dist(rng);
-        int x = index % problemParams_.width;
-        int y = index / problemParams_.width;
+    placeBadSpots();
 
-        if (boardRep_.at(x, y) != DugType::DugType::green) {
-            r--;
-            continue;
-        }
-        boardRep_.ref(x, y) = DugType::DugType::rupoor;
-    }
+    placeRupees();
+}
 
-    int badspots;
-    for (int y = 0; y < problemParams_.height; y++) {
-        for (int x = 0; x < problemParams_.width; x++) {
-            if (boardRep_.at(x, y) == DugType::DugType::green) {
-                badspots = 0;
-                for (int filterY = y - 1; filterY < y + 2; filterY++) {
-                    if (filterY >= 0 && filterY < problemParams_.height) {
-                        for (int filterX = x - 1; filterX < x + 2; filterX++) {
-                            if (filterX >= 0 &&
-                                filterX < problemParams_.width) {
-                                if (filterX != x || filterY != y) {
-                                    if (boardRep_.at(filterX, filterY) < 0) {
-                                        badspots++;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+void Board::placeBadSpots()
+{
+    std::vector indices = std::vector<std::size_t>(std::size_t(problemParams_.height) *
+                                                   std::size_t(problemParams_.width));
+    std::iota(indices.begin(), indices.end(), 0);
+    std::shuffle(indices.begin(), indices.end(), rng());
+
+    std::size_t badSpotIndex = 0;
+    for (std::size_t b = 0; b != problemParams_.bombs; ++b) {
+        const std::size_t index = indices[badSpotIndex];
+        const std::size_t x = index % problemParams_.width;
+        const std::size_t y = index / problemParams_.width;
+
+        boardRep_.ref(x, y) = dugtype::bomb;
+        ++badSpotIndex;
+    }
+    for (std::size_t r = 0; r != problemParams_.rupoors; ++r) {
+        const std::size_t index = indices[badSpotIndex];
+        const std::size_t x = index % problemParams_.width;
+        const std::size_t y = index / problemParams_.width;
+
+        boardRep_.ref(x, y) = dugtype::rupoor;
+        ++badSpotIndex;
+    }
+}
+
+void Board::placeRupees()
+{
+    for (std::size_t y = 0; y != problemParams_.height; ++y) {
+        for (std::size_t x = 0; x != problemParams_.width; ++x) {
+            if (boardRep_.at(x, y) == dugtype::green) {
+                const std::size_t badspots = badSpotsAround(x, y, boardRep_);
                 switch (badspots) {
                 case 0:
-                    boardRep_.ref(x, y) = DugType::DugType::green;
+                    boardRep_.ref(x, y) = dugtype::green;
                     break;
                 case 1:
                 case 2:
-                    boardRep_.ref(x, y) = DugType::DugType::blue;
+                    boardRep_.ref(x, y) = dugtype::blue;
                     break;
                 case 3:
                 case 4:
-                    boardRep_.ref(x, y) = DugType::DugType::red;
+                    boardRep_.ref(x, y) = dugtype::red;
                     break;
                 case 5:
                 case 6:
-                    boardRep_.ref(x, y) = DugType::DugType::silver;
+                    boardRep_.ref(x, y) = dugtype::silver;
                     break;
                 case 7:
                 case 8:
-                    boardRep_.ref(x, y) = DugType::DugType::gold;
+                    boardRep_.ref(x, y) = dugtype::gold;
+                    break;
+                default:
                     break;
                 }
             }
@@ -164,7 +122,7 @@ void Board::reload() &
     }
 }
 
-DugType::DugType Board::getCell(int x, int y) &
+DugTypeEnum Board::getCell(const std::size_t x, const std::size_t y) &
 {
     opened_.set(x, y, true);
     return boardRep_.at(x, y);
@@ -172,8 +130,8 @@ DugType::DugType Board::getCell(int x, int y) &
 
 bool Board::hasWon() const &
 {
-    for (int y = 0; y < problemParams_.height; y++) {
-        for (int x = 0; x < problemParams_.width; x++) {
+    for (std::size_t y = 0; y != problemParams_.height; ++y) {
+        for (std::size_t x = 0; x != problemParams_.width; ++x) {
             if (!opened_.get(x, y) && boardRep_.at(x, y) >= 0) {
                 return false;
             }

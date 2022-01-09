@@ -10,7 +10,7 @@ class Board
 public:
     explicit Board(const ProblemParameters &params);
 
-    DugType::DugType getCell(int x, int y) &;
+    DugTypeEnum getCell(std::size_t x, std::size_t y) &;
     bool hasWon() const &;
 
     void reload() &;
@@ -18,5 +18,8 @@ public:
 private:
     ProblemParameters problemParams_;
     Vector2d<bool> opened_;
-    Vector2d<DugType::DugType> boardRep_;
+    Vector2d<DugTypeEnum> boardRep_;
+
+    void placeBadSpots();
+    void placeRupees();
 };

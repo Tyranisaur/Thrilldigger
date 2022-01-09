@@ -6,11 +6,11 @@ struct Constraint;
 
 struct Partition {
     std::unordered_set<Constraint *> constraints;
-    std::vector<int> holes;
-    int badness = 0;
+    std::vector<std::size_t> holes;
+    std::size_t badness = 0;
 
-    bool operator==(Partition &other) const
+    friend bool operator==(const Partition &l, const Partition &r)
     {
-        return this->constraints == other.constraints;
+        return l.constraints == r.constraints;
     }
 };

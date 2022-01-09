@@ -1,4 +1,5 @@
 #pragma once
+
 #include "constraint.h"
 #include "dugtype.h"
 #include "partition.h"
@@ -12,53 +13,52 @@ class Solver : public QObject
     Q_OBJECT
 public:
     Solver(const ProblemParameters &params);
+    ~Solver();
 
-    void setCell(int x, int y, DugType::DugType type);
+    void setCell(std::size_t x, std::size_t y, DugTypeEnum type);
     const std::vector<double> &getProbabilityArray() const;
     void reload();
 
-    double getTotalNumConfigurations();
-    uint64_t getIterations();
-    int getLegalIterations();
-    int getConstrainedHoles();
-    int getPartitions();
+    double getTotalNumConfigurations() const;
+    uint64_t getIterations() const;
+    std::size_t getLegalIterations() const;
+    std::size_t getConstrainedHoles() const;
+    std::size_t getPartitions() const;
+
+    void partitionCalculate();
 
 signals:
     void done();
 
-public slots:
-    void partitionCalculate();
-
 private:
-    inline static const std::unordered_set<Constraint *> emptySet;
-    ProblemParameters params_;
-    int numHoles = 0;
-    int bombsAmongConstrainedHoles = 0;
-    std::vector<double> probabilities;
+    const ProblemParameters params_;
+    const std::size_t numHoles = params_.width * params_.height;
+    std::size_t bombsAmongConstrainedHoles = 0;
+    std::vector<double> probabilities = std::vector<double>(std::size_t(numHoles));
     std::vector<Constraint *> constraintList;
-    std::vector<Constraint> constraints;
+    std::vector<Constraint> constraints = std::vector<Constraint>(std::size_t(numHoles));
 
-    std::vector<Partition> partitions;
-    std::vector<bool> badSpots;
+    std::vector<Partition> partitions = std::vector<Partition>(std::size_t(numHoles));
+    std::vector<bool> badSpots = std::vector<bool>(std::size_t(numHoles), false);
 
-    std::vector<std::unordered_set<Constraint *>> imposingConstraints;
-    std::unordered_set<int> constrainedUnopenedHoles;
-    std::unordered_set<int> unconstrainedUnopenedHoles;
-    std::unordered_set<int> knownSafeSpots;
-    std::unordered_set<int> knownBadSpots;
+    std::vector<std::unordered_set<Constraint *>> imposingConstraints = std::vector<std::unordered_set<Constraint *>>(std::size_t(numHoles));
+    std::unordered_set<std::size_t> constrainedUnopenedHoles;
+    std::unordered_set<std::size_t> unconstrainedUnopenedHoles;
+    std::unordered_set<std::size_t> knownSafeSpots;
+    std::unordered_set<std::size_t> knownBadSpots;
     std::vector<Partition *> partitionList;
     std::vector<Partition *> sunkenPartitions;
 
-    std::vector<DugType::DugType> board;
+    std::vector<DugTypeEnum> board =
+        std::vector<DugTypeEnum>(numHoles, dugtype::undug);
     double totalWeight = 0.0;
-    uint64_t totalIterations = 0;
-    int legalIterations = 0;
-    int numConstrained = 0;
+    std::uint64_t totalIterations = 0;
+    std::size_t legalIterations = 0;
+    std::size_t numConstrained = 0;
 
-    bool validateBoard();
-    void setKnownSafeSpot(int index);
-    void setKnownBadSpot(int index);
+    bool validateBoard() const;
+    void setKnownSafeSpot(std::size_t index);
+    void setKnownBadSpot(std::size_t index);
     void resetBoard();
     void generatePartitions();
-    double choose(unsigned long long n, unsigned long long k);
 };

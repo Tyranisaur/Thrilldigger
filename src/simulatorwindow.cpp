@@ -3,76 +3,70 @@
 #include "headers/board.h"
 #include "headers/dugtype.h"
 #include "headers/problemparameters.h"
+#include "headers/rupeevalues.h"
 #include "ui_simulatorwindow.h"
 #include <QCloseEvent>
 #include <QPushButton>
-#include <memory>
 
 SimulatorWindow::SimulatorWindow(const ProblemParameters &params,
                                  QWidget *parent)
     : QMainWindow(parent),
-      ui(std::make_unique<Ui::SimulatorWindow>()),
-      board(params),
-      cellGrid(params.height, params.width)
+      boardWidth{params.width},
+      boardHeight{params.height},
+      board(params)
 {
-    ui->setupUi(this);
+    ui.setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
-    QPushButton *button;
-    boardHeight = params.height;
-    boardWidth = params.width;
-    rupeeTotal = 0;
-    for (int y = 0; y < params.height; y++) {
-        for (int x = 0; x < params.width; x++) {
-            button = new QPushButton(ui->gridLayoutWidget);
+    for (std::size_t y = 0; y != params.height; ++y) {
+        for (std::size_t x = 0; x != params.width; ++x) {
+            QPushButton *button = new QPushButton(ui.gridLayoutWidget);
             cellGrid.ref(x, y) = button;
-            connect(button, &QPushButton::clicked, [=]() {
+            connect(button, &QPushButton::clicked, [x, y, this] {
                 this->cellOpened(x, y);
             });
 
-            ui->gridLayout->addWidget(button, y, x, Qt::AlignHCenter);
+            ui.gridLayout->addWidget(button, int(y), int(x), Qt::AlignHCenter);
         }
     }
 }
 
-void SimulatorWindow::cellOpened(int x, int y)
+void SimulatorWindow::cellOpened(std::size_t x, std::size_t y)
 {
     QPushButton *button = cellGrid.ref(x, y);
-    DugType::DugType value = board.getCell(x, y);
+    const DugTypeEnum value = board.getCell(x, y);
     switch (value) {
-    case DugType::DugType::bomb:
+    case dugtype::bomb:
         button->setStyleSheet("background: black");
         disableAllButtons();
         break;
-    case DugType::DugType::rupoor:
+    case dugtype::rupoor:
         button->setStyleSheet("background: gray");
-        rupeeTotal = rupeeTotal - 10 < 0 ? 0 : rupeeTotal - 10;
         break;
-    case DugType::DugType::green:
+    case dugtype::green:
         button->setStyleSheet("background: green");
-        rupeeTotal += 1;
         break;
-    case DugType::DugType::blue:
+    case dugtype::blue:
         button->setStyleSheet("background: blue");
-        rupeeTotal += 5;
         break;
-    case DugType::DugType::red:
+    case dugtype::red:
         button->setStyleSheet("background: red");
-        rupeeTotal += 20;
         break;
-    case DugType::DugType::silver:
+    case dugtype::silver:
         button->setStyleSheet("background: silver");
-        rupeeTotal += 100;
         break;
-    case DugType::DugType::gold:
+    case dugtype::gold:
         button->setStyleSheet("background: gold");
-        rupeeTotal += 300;
+        break;
+    case dugtype::undug:
         break;
     }
+    rupeeTotal += rupee::value(value);
+    rupeeTotal = std::max(rupeeTotal, 0);
     if (board.hasWon()) {
         disableAllButtons();
     }
     QString text = "Rupees: " + QString::number(rupeeTotal);
-    ui->scoreLabel->setText(text);
+    ui.scoreLabel->setText(std::move(text));
     button->setEnabled(false);
     emit openedCell(x, y, value);
 }

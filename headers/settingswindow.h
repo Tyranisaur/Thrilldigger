@@ -1,12 +1,16 @@
 #pragma once
 
-#include "benchmark.h"
-#include "simulatorwindow.h"
-#include "solverwindow.h"
+#include "difficulty.h"
+
 #include "ui_settingswindow.h"
 #include <QMainWindow>
 
+#include <memory>
+
 class QCloseEvent;
+class Benchmark;
+class SimulatorWindow;
+class SolverWindow;
 
 class SettingsWindow : public QMainWindow
 {
@@ -14,35 +18,39 @@ class SettingsWindow : public QMainWindow
 
 public:
     explicit SettingsWindow(QWidget *parent = nullptr);
-    void closeEvent(QCloseEvent *e);
+    ~SettingsWindow() override;
+    void closeEvent(QCloseEvent *e) override;
 
-private slots:
+private:
 
-    void on_SimulatorButton_clicked();
+    Ui::SettingsWindow ui{};
+    std::unique_ptr<Benchmark> benchmark;
+    std::unique_ptr<SimulatorWindow> simulator;
+    std::unique_ptr<SolverWindow> solver;
 
-    void on_SolverButton_clicked();
+    void setParameterSpinners(difficulty::Difficulty difficultyLevel);
 
-    void on_beginnerRadioButton_clicked();
+    void simulatorButton_clicked();
 
-    void on_intermediateRadioButton_clicked();
+    void solverButton_clicked();
 
-    void on_expertRadioButton_clicked();
+    void beginnerRadioButton_clicked();
 
-    void on_customRadioButton_clicked();
+    void intermediateRadioButton_clicked();
+
+    void expertRadioButton_clicked();
+
+    void customRadioButton_clicked();
 
     void simWindowDestroyed();
 
     void solverWindowDestroyed();
 
-    void on_bothButton_clicked();
+    void bothButton_clicked();
 
-    void on_benchmarkButton_clicked();
+    void benchmarkButton_clicked();
 
     void benchmarkDone();
 
-private:
-    std::unique_ptr<Benchmark> benchmark;
-    std::unique_ptr<Ui::SettingsWindow> ui;
-    std::unique_ptr<SimulatorWindow> simulator;
-    std::unique_ptr<SolverWindow> solver;
+    ProblemParameters problemParameters();
 };
