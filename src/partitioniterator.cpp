@@ -22,10 +22,12 @@ constexpr double choose(std::size_t n, const std::size_t k)
 }
 } // namespace
 
-PartitionIterator::PartitionIterator(std::vector<Partition *> *partitionList,
-                                     std::vector<bool> &badSpots,
-                                     std::vector<Partition *> *sunkenPartitions,
-                                     std::size_t numBadSpots)
+PartitionIterator::PartitionIterator(
+    std::vector<Partition *> *partitionList,
+    std::vector<bool> &badSpots,
+    std::vector<Partition *> *sunkenPartitions,
+    const std::vector<Constraint *> &constraintList,
+    std::size_t numBadSpots)
     : partitionList_{*partitionList},
       indexArrayLength_{numBadSpots},
       badSpots_{badSpots}
@@ -82,7 +84,24 @@ PartitionIterator::PartitionIterator(std::vector<Partition *> *partitionList,
         maxAmountsPerPartition_.insert(maxAmountsPerPartition_.begin(),
                                        maxAmount);
     }
-    if (unconstrainedPartition) {
+    if (unconstrainedPartition)
+    {
+        const std::size_t maxBadnessInsideConstraints =
+            std::transform_reduce(constraintList.begin(),
+                                  constraintList.end(),
+                                  std::size_t{0},
+                                  std::plus{},
+                                  [](const Constraint *constraint) {
+                                      return constraint->maxBadness;
+                                  });
+
+        const std::size_t minBadnessInsideConstraints =
+            std::reduce(constraintList.begin(),
+                        constraintList.end(),
+                        std::size_t{0},
+                        [](const std::size_t value, const Constraint *rhs) {
+                            return std::max(value, rhs->maxBadness - 1);
+                        });
 
         Partition *partition = partitionList->at(0);
         std::size_t maxAmount =
@@ -90,6 +109,13 @@ PartitionIterator::PartitionIterator(std::vector<Partition *> *partitionList,
                                           : partition->holes.size(),
                      partition->holes.size());
         std::size_t minAmount = numBadSpots > sumMax ? numBadSpots - sumMax : 0;
+
+        maxAmount =
+            std::min(maxAmount, numBadSpots - minBadnessInsideConstraints);
+        minAmount = std::max(minAmount,
+                             numBadSpots > maxBadnessInsideConstraints
+                                 ? numBadSpots - maxBadnessInsideConstraints
+                                 : 0);
         indexArrayLength_ -= minAmount;
 
         partition->badness = minAmount;

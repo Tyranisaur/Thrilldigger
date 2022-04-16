@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 
+struct Constraint;
 struct Partition;
 
 class PartitionIterator
@@ -9,6 +10,7 @@ public:
     PartitionIterator(std::vector<Partition *> *partitionList,
                       std::vector<bool> &badspots,
                       std::vector<Partition *> *sunkenPartitions,
+                      const std::vector<Constraint *> &constraintList,
                       std::size_t numBadSpots);
 
     bool goToNextState();

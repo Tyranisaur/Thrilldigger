@@ -149,6 +149,7 @@ void Solver::partitionCalculate()
     PartitionIterator it(&partitionList,
                          badSpots,
                          &sunkenPartitions,
+                         constraintList,
                          params_.bombs + params_.rupoors -
                              knownBadSpots.size());
 
